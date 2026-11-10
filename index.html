@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NbS+C · Designing resilience with nature</title>
+<meta name="description" content="Nature-based Solutions for water: find the right place, design it, prove it with models and track it over time.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=JetBrains+Mono:wght@400;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --forest:#21492E; --gold:#B88A4E; --cream:#F7F4ED; --leaf:#3D7350; --sage:#8AA98F;
+  --sage-t:#EAF0EA; --mist:#C3D2C4; --gold-s:#D9C08A; --water:#5B8A9E; --ink:#2B322D;
+  --soft:#5C665E; --line:#E4E0D5; --rust:#B0472F; --card:#FBF9F4;
+  --serif:'Fraunces', Georgia, serif; --sans:'Manrope', system-ui, sans-serif; --mono:'JetBrains Mono', ui-monospace, monospace;
+  --wrap:1240px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--cream);color:var(--ink);font-family:var(--sans);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit}
+button{font:inherit;cursor:pointer}
+.wrap{max-width:var(--wrap);margin:0 auto;padding:0 32px}
+.mono{font-family:var(--mono);font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold)}
+.skip{position:absolute;left:-999px;top:8px;background:var(--forest);color:#fff;padding:8px 14px;border-radius:8px;z-index:100}
+.skip:focus{left:8px}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px;border-radius:6px}
+
+/* ---------- header ---------- */
+header.top{position:fixed;inset:0 0 auto 0;z-index:50;transition:background .4s, box-shadow .4s}
+header.top.scrolled{background:rgba(247,244,237,.88);backdrop-filter:blur(10px);box-shadow:0 1px 0 var(--line)}
+.top .bar{display:flex;align-items:center;gap:28px;height:76px}
+.logo{font-family:var(--serif);font-weight:700;font-size:28px;color:var(--forest);text-decoration:none;letter-spacing:-.01em}
+.logo b{color:var(--gold);font-weight:700}
+nav.main{display:flex;gap:22px;margin-left:8px}
+nav.main a{white-space:nowrap}
+.search-btn{white-space:nowrap}
+@media (max-width:1500px){.search-btn span{display:none}.top .bar{gap:20px}}
+@media (max-width:1280px){.search-btn kbd{display:none}}
+nav.main a{text-decoration:none;font-weight:600;font-size:16px;color:var(--ink);opacity:.82}
+nav.main a:hover{opacity:1;color:var(--forest)}
+.top .right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.search-btn{display:flex;align-items:center;gap:10px;background:transparent;border:1px solid var(--line);border-radius:999px;padding:8px 14px;color:var(--soft);font-size:15px}
+.search-btn kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-radius:5px;padding:1px 6px;background:#fff}
+.depth{display:flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:#fff}
+.depth button{border:0;background:transparent;border-radius:999px;padding:6px 12px;font-size:14px;font-weight:600;color:var(--soft)}
+.depth button[aria-pressed="true"]{background:var(--forest);color:#fff}
+.btn{white-space:nowrap;display:inline-flex;align-items:center;gap:10px;border-radius:999px;padding:12px 22px;font-weight:700;font-size:16px;text-decoration:none;border:1px solid transparent;transition:transform .2s, background .2s}
+.btn:hover{transform:translateY(-1px)}
+.btn.primary{background:var(--forest);color:#fff}
+.btn.primary:hover{background:#1a3b25}
+.btn.ghost{border-color:var(--forest);color:var(--forest);background:transparent}
+.btn.small{padding:9px 16px;font-size:15px}
+.btn .arr{transition:transform .2s}
+.btn:hover .arr{transform:translateX(3px)}
+.burger{display:none;background:none;border:0;font-size:26px;color:var(--forest)}
+
+/* ---------- scroll story ---------- */
+#story{position:relative;height:720vh}
+.stage{position:sticky;top:0;height:100vh;display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);align-items:center;max-width:var(--wrap);margin:0 auto;padding:76px 32px 0}
+.chapters{position:relative;height:440px}
+.chap{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;opacity:0;transform:translateY(24px);transition:opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1);pointer-events:none}
+.chap.on{opacity:1;transform:none;pointer-events:auto}
+.chap h1,.chap h2{font-family:var(--serif);font-weight:600;font-size:clamp(40px,5vw,72px);line-height:1.02;letter-spacing:-.01em;text-transform:uppercase;color:var(--ink);margin:18px 0 22px}
+.chap h1 em,.chap h2 em{font-style:italic;color:var(--gold);font-weight:500;text-transform:none}
+.chap p{font-size:19px;color:var(--soft);max-width:30em;margin-bottom:28px}
+.chap .acts{display:flex;gap:12px;flex-wrap:wrap}
+.canvas-wrap{position:relative;display:flex;justify-content:center;align-items:center}
+#scene{width:min(56vw,82vh);height:min(56vw,82vh);display:block}
+.dots{position:absolute;right:-6px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:14px}
+.dots button{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--sage);background:transparent;padding:0}
+.dots button.on{background:var(--forest);border-color:var(--forest);transform:scale(1.25)}
+.counter{position:absolute;left:32px;bottom:34px;display:flex;align-items:center;gap:16px}
+.counter .track{width:180px;height:2px;background:var(--mist);position:relative;overflow:hidden;border-radius:2px}
+.counter .track i{position:absolute;inset:0 auto 0 0;background:var(--forest);width:0}
+.hint{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);font-family:var(--mono);font-size:12px;letter-spacing:.2em;color:var(--soft);display:flex;flex-direction:column;align-items:center;gap:8px;transition:opacity .4s}
+.hint span{width:1px;height:34px;background:linear-gradient(var(--soft),transparent);animation:drip 1.8s infinite}
+@keyframes drip{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+/* ---------- sections ---------- */
+section.blk{padding:120px 0}
+.sec-head{max-width:760px;margin-bottom:56px}
+.sec-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(34px,4vw,54px);line-height:1.08;letter-spacing:-.01em;margin:14px 0 18px}
+.sec-head h2 em{font-style:italic;color:var(--gold);font-weight:500}
+.sec-head p{color:var(--soft);font-size:19px}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:56px}
+.three div{padding:20px 24px 22px 0}
+.three div+div{padding-left:24px;border-left:1px solid var(--line)}
+.three b{display:block;font-family:var(--mono);font-size:12px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:6px}
+.three span{font-size:17px}
+.alt{background:#F1EDE3}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px}
+
+/* persona */
+.persona-row{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:28px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:12px 20px;font-weight:600;font-size:16px;color:var(--ink);transition:all .2s}
+.chip:hover{border-color:var(--sage)}
+.chip[aria-pressed="true"]{background:var(--forest);border-color:var(--forest);color:#fff}
+.persona-panel{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:0;overflow:hidden}
+.persona-panel>div{padding:34px}
+.persona-panel>div+div{border-left:1px solid var(--line)}
+.persona-panel h3{font-family:var(--serif);font-size:28px;font-weight:600;line-height:1.15;margin:10px 0 12px}
+.persona-panel ul{list-style:none}
+.persona-panel li{padding:8px 0;border-bottom:1px dashed var(--line);font-size:16px}
+.persona-panel li:last-child{border:0}
+
+/* finder */
+.finder{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.q{padding:30px 32px}
+.q+.q{margin-top:16px}
+.q h3{font-size:18px;font-weight:700;margin:8px 0 14px}
+.q .opts{display:flex;flex-wrap:wrap;gap:10px}
+.result{padding:34px;position:sticky;top:100px;align-self:start;min-height:420px}
+.result h3{font-family:var(--serif);font-size:30px;font-weight:600;line-height:1.15;margin:10px 0 18px}
+.result .rec{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--line)}
+.result .rec:last-of-type{border:0}
+.result .rec .ic{width:44px;height:44px;flex:none;border-radius:12px;background:var(--sage-t);display:grid;place-items:center}
+.result .rec b{display:block;font-size:17px}
+.result .rec span{font-size:15px;color:var(--soft)}
+.result .empty{color:var(--soft);font-size:17px}
+.result .next{margin-top:20px;padding:16px 18px;border-radius:14px;background:var(--sage-t);font-size:16px}
+
+/* solutions */
+.sol-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.sol{padding:24px;text-align:left;border:1px solid var(--line);background:var(--card);border-radius:20px;transition:transform .25s, box-shadow .25s, border-color .25s;color:var(--ink)}
+.sol:hover,.sol[aria-expanded="true"]{transform:translateY(-3px);box-shadow:0 18px 40px -24px rgba(33,73,46,.45);border-color:var(--sage)}
+.sol svg{width:100%;height:120px;display:block;margin-bottom:16px;border-radius:12px;background:var(--sage-t)}
+.sol h3{font-family:var(--serif);font-size:23px;font-weight:600;line-height:1.15}
+.sol p{font-size:15px;color:var(--soft);margin-top:6px}
+.sol-detail{grid-column:1/-1;display:none;padding:34px;grid-template-columns:1.3fr 1fr 1fr 1fr;gap:28px}
+.sol-detail.open{display:grid;animation:rise .45s ease}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.sol-detail h3{font-family:var(--serif);font-size:30px;font-weight:600;margin:8px 0 10px}
+.sol-detail h4{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+.sol-detail ul{list-style:none}
+.sol-detail li{font-size:16px;padding:6px 0 6px 22px;position:relative}
+.sol-detail li:before{content:"";position:absolute;left:0;top:14px;width:10px;height:10px;border-radius:50%;background:var(--leaf)}
+
+/* tools */
+.tool-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.tool{padding:26px;display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden}
+.tool .pv{height:110px;border-radius:14px;background:var(--sage-t);margin-bottom:8px;position:relative;overflow:hidden}
+.tool h3{font-family:var(--serif);font-size:22px;font-weight:600;line-height:1.2}
+.tool p{font-size:15px;color:var(--soft)}
+.tool .who{font-size:13px;color:var(--leaf);font-weight:700;margin-top:auto}
+.badge{z-index:2;position:absolute;top:18px;right:18px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:4px 10px;border-radius:999px;background:#fff;border:1px solid var(--line)}
+.badge.live{background:var(--forest);color:#fff;border-color:var(--forest)}
+.badge.pilot{background:var(--gold-s);border-color:var(--gold-s);color:#4a3517}
+.tool.feature{grid-column:span 2}
+
+/* compare */
+.compare{display:grid;grid-template-columns:1fr 1.2fr;gap:28px;align-items:stretch}
+.compare .card{padding:30px}
+.range{width:100%;accent-color:var(--forest);margin:18px 0 6px}
+.kpis{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:22px}
+.kpi{padding:16px;border-radius:14px;background:var(--sage-t)}
+.kpi b{font-family:var(--serif);font-size:26px;display:block;line-height:1.1}
+.kpi span{font-size:14px;color:var(--soft)}
+.note{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--soft);text-transform:uppercase;margin-top:14px}
+
+/* plan studio */
+.studio{display:grid;grid-template-columns:1.25fr 1fr;gap:28px}
+.studio .card{padding:30px}
+.palette{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 18px}
+.palette .chip{padding:9px 14px;font-size:15px;display:flex;align-items:center;gap:8px}
+.palette .chip i{width:14px;height:14px;border-radius:4px;display:inline-block}
+.board{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;aspect-ratio:8/5}
+.cell{border:0;border-radius:8px;background:#E8E1CF;position:relative;transition:transform .15s}
+.cell:hover{transform:scale(1.05)}
+.cell.river{background:var(--water);cursor:not-allowed}
+.cell.town{background:#D8D2C4}
+.cell.town:after{content:"";position:absolute;inset:30% 25%;background:#B9B1A0;border-radius:3px}
+.cell.wetland{background:#7FA7B8}
+.cell.forest{background:var(--forest)}
+.cell.buffer{background:var(--sage)}
+.cell.pond{background:#9DBFCB}
+.cell.wetland:after,.cell.forest:after,.cell.buffer:after,.cell.pond:after{content:"";position:absolute;inset:32%;border-radius:50%;background:rgba(255,255,255,.35)}
+.bars .row{margin:14px 0}
+.bars .row div{display:flex;justify-content:space-between;font-size:15px;font-weight:600}
+.bars .meter{height:10px;border-radius:6px;background:var(--line);overflow:hidden;margin-top:6px;position:relative}
+.bars .meter i{position:absolute;inset:0 auto 0 0;background:var(--leaf);border-radius:6px;transition:width .5s cubic-bezier(.2,.7,.2,1)}
+.bars .meter s{position:absolute;top:-3px;bottom:-3px;width:3px;background:var(--gold);border-radius:2px;transition:left .5s;display:none}
+.iucn{display:grid;grid-template-columns:1fr 340px;gap:28px;margin-top:28px;padding:30px}
+.iucn .qrow{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;padding:10px 0;border-bottom:1px dashed var(--line);font-size:16px}
+.seg{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:#fff}
+.seg button{border:0;background:none;padding:6px 12px;font-size:13px;font-weight:600;color:var(--soft)}
+.seg button[aria-pressed="true"]{background:var(--forest);color:#fff}
+
+/* services */
+.loop{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;counter-reset:s}
+.step{padding:28px;position:relative}
+.step .n{font-family:var(--serif);font-size:56px;font-weight:600;color:var(--mist);line-height:1}
+.step h3{font-family:var(--serif);font-size:26px;font-weight:600;margin:8px 0 8px}
+.step ul{list-style:none;margin-top:12px}
+.step li{font-size:15px;padding:5px 0;border-top:1px solid var(--line)}
+.step .dur{margin-top:14px;font-size:13px;color:var(--soft)}
+
+/* projects */
+.proj-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.proj{overflow:hidden}
+.proj .img{height:200px;background:var(--sage-t);position:relative}
+.proj .body{padding:24px}
+.proj h3{font-family:var(--serif);font-size:24px;font-weight:600;margin:6px 0 8px;line-height:1.2}
+.proj p{font-size:15px;color:var(--soft)}
+.ph{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--rust);border:1px dashed var(--rust);border-radius:6px;padding:2px 7px;margin-left:6px;vertical-align:middle;text-transform:uppercase}
+
+/* cta */
+.cta{background:var(--forest);color:#F7F4ED;border-radius:28px;padding:64px;display:grid;grid-template-columns:1.1fr 1fr;gap:48px}
+.cta h2{font-family:var(--serif);font-size:clamp(34px,4vw,54px);font-weight:600;line-height:1.05}
+.cta h2 em{color:var(--gold-s);font-weight:500}
+.cta p{opacity:.85;margin:18px 0}
+.cta form{display:grid;gap:12px}
+.cta input,.cta select,.cta textarea{width:100%;border-radius:12px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.07);color:#fff;padding:13px 16px;font:inherit;font-size:16px}
+.cta input::placeholder,.cta textarea::placeholder{color:rgba(255,255,255,.55)}
+.cta select option{color:var(--ink)}
+.cta .btn.primary{background:var(--gold);justify-self:start}
+.cta .msg{font-size:15px;color:var(--gold-s);min-height:22px}
+footer{padding:60px 0 50px;color:var(--soft);font-size:15px}
+footer .row{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:28px}
+
+/* search modal */
+.modal{position:fixed;inset:0;background:rgba(43,50,45,.35);backdrop-filter:blur(4px);display:none;z-index:80;align-items:flex-start;justify-content:center;padding-top:12vh}
+.modal.open{display:flex}
+.sbox{width:min(640px,92vw);background:var(--cream);border-radius:20px;box-shadow:0 30px 80px -30px rgba(0,0,0,.45);overflow:hidden}
+.sbox input{width:100%;border:0;border-bottom:1px solid var(--line);background:transparent;padding:22px 24px;font:inherit;font-size:20px;outline:none}
+.sbox ul{list-style:none;max-height:52vh;overflow:auto;padding:8px}
+.sbox li a{display:flex;justify-content:space-between;gap:16px;padding:12px 16px;border-radius:12px;text-decoration:none}
+.sbox li a span{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--gold);text-transform:uppercase}
+.sbox li a.sel,.sbox li a:hover{background:var(--sage-t)}
+.sbox .foot{padding:10px 18px;border-top:1px solid var(--line);font-size:13px;color:var(--soft)}
+
+/* glossary */
+abbr.g{text-decoration:underline dotted var(--gold);text-underline-offset:4px;cursor:help;position:relative}
+abbr.g:hover:after,abbr.g:focus:after{content:attr(data-tip);position:absolute;left:0;top:130%;width:260px;background:var(--ink);color:#fff;font-size:14px;line-height:1.45;padding:10px 12px;border-radius:10px;z-index:20;font-weight:500}
+
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .9s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+
+[data-depth="tech"] .plain{display:none}
+[data-depth="plain"] .tech{display:none}
+
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  .reveal{opacity:1;transform:none;transition:none}
+  .chap{transition:none}
+  .hint span{animation:none}
+}
+@media (max-width:1080px){
+  nav.main{display:none}
+  .burger{display:block}
+  nav.main.open{display:flex;flex-direction:column;position:absolute;top:76px;left:0;right:0;background:var(--cream);padding:18px 32px 26px;gap:16px;box-shadow:0 12px 30px -20px rgba(0,0,0,.3);margin:0}
+  nav.main.open a{font-size:20px}
+  .sol-grid,.tool-grid,.loop{grid-template-columns:repeat(2,1fr)}
+  .tool.feature{grid-column:span 2}
+  .persona-panel,.finder,.compare,.studio,.cta,.iucn{grid-template-columns:1fr}
+  .persona-panel>div+div{border-left:0;border-top:1px solid var(--line)}
+  .proj-grid{grid-template-columns:1fr 1fr}
+  .sol-detail.open{grid-template-columns:1fr 1fr}
+  .result{position:static}
+}
+@media (max-width:760px){
+  body{font-size:17px}
+  .wrap{padding:0 18px}
+  .search-btn span,.search-btn kbd,.depth{display:none}
+  .top .right .btn{display:none}
+  .stage{grid-template-columns:1fr;grid-template-rows:auto 1fr;padding:84px 18px 0;align-content:start}
+  .canvas-wrap{order:-1}
+  #scene{width:min(88vw,46vh);height:min(88vw,46vh)}
+  .chapters{height:330px}
+  .chap h1,.chap h2{font-size:36px;margin:10px 0 12px}
+  .chap p{font-size:16px;margin-bottom:16px}
+  .dots{right:0}
+  .counter,.hint{display:none}
+  section.blk{padding:80px 0}
+  .sol-grid,.tool-grid,.loop,.proj-grid{grid-template-columns:1fr}
+  .tool.feature{grid-column:auto}
+  .three{grid-template-columns:1fr}
+  .three div+div{padding-left:0;border-left:0;border-top:1px solid var(--line)}
+  .sol-detail.open{grid-template-columns:1fr}
+  .cta{padding:36px 24px}
+  .kpis{grid-template-columns:1fr}
+}
+
+/* ---------- pages ---------- */
+#page{padding:120px 0 40px;min-height:100vh;animation:rise .5s ease}
+.crumb{font-size:15px;color:var(--soft);margin-bottom:26px}
+.crumb a{text-decoration:none;color:var(--leaf);font-weight:600}
+.p-hero{display:grid;grid-template-columns:1fr 1.15fr;gap:56px;align-items:center;margin-bottom:72px}
+.p-hero h1{font-family:var(--serif);font-weight:600;font-size:clamp(42px,5vw,72px);line-height:1.02;letter-spacing:-.01em;margin:14px 0 18px}
+.p-hero h1 em{font-style:italic;color:var(--gold);font-weight:500}
+.p-hero .lead{font-size:20px;color:var(--soft);margin-bottom:26px}
+.p-hero .acts{display:flex;gap:12px;flex-wrap:wrap}
+.media{border-radius:22px;overflow:hidden;background:var(--sage-t);border:1px solid var(--line);box-shadow:0 30px 60px -40px rgba(33,73,46,.5);position:relative}
+.media video,.media img{display:block;width:100%;height:auto}
+.media .cap{position:absolute;left:14px;bottom:12px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;background:rgba(251,249,244,.92);padding:4px 10px;border-radius:999px;color:var(--soft);text-transform:uppercase}
+.p-sec{margin-bottom:72px}
+.p-sec>h2{font-family:var(--serif);font-weight:600;font-size:clamp(28px,3vw,40px);margin:10px 0 24px;line-height:1.1}
+.p-sec>h2 em{font-style:italic;color:var(--gold);font-weight:500}
+.steps4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.steps4 .card{padding:24px}
+.steps4 .n{font-family:var(--mono);font-size:12px;letter-spacing:.18em;color:var(--gold)}
+.steps4 h3{font-family:var(--serif);font-size:23px;font-weight:600;margin:8px 0 6px}
+.steps4 p{font-size:16px;color:var(--soft)}
+.ben3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.ben3 .card{padding:26px}
+.ben3 h3{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+.ben3 li{list-style:none;padding:7px 0 7px 22px;position:relative;font-size:17px;border-bottom:1px dashed var(--line)}
+.ben3 li:last-child{border:0}
+.ben3 li:before{content:"";position:absolute;left:0;top:16px;width:10px;height:10px;border-radius:50%;background:var(--leaf)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.two .card{padding:28px}
+.io li{list-style:none;padding:9px 0;border-bottom:1px solid var(--line);font-size:17px}
+.io li:last-child{border:0}
+.mini-tools{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.mini-tools a{padding:20px;text-decoration:none;display:block}
+.mini-tools b{font-family:var(--serif);font-size:20px;display:block;margin:6px 0 4px}
+.mini-tools span{font-size:14px;color:var(--soft)}
+.strip{background:var(--forest);color:var(--cream);border-radius:24px;padding:40px 44px;display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap}
+.strip h3{font-family:var(--serif);font-size:30px;font-weight:600}
+.strip .btn.primary{background:var(--gold)}
+.next-prev{display:flex;justify-content:space-between;gap:16px;margin-top:40px;font-weight:700}
+.next-prev a{text-decoration:none;color:var(--forest)}
+.anim-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-radius:22px;overflow:hidden;border:1px solid var(--line)}
+.anim-steps div{padding:26px 18px;background:var(--sage-t);text-align:center;min-height:240px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;opacity:.35;transition:opacity .6s, background .6s}
+.anim-steps div.on{opacity:1;background:#fff}
+.anim-steps svg{width:84px;height:84px}
+.anim-steps b{font-family:var(--serif);font-size:19px}
+
+/* film modal */
+.film{position:fixed;inset:0;z-index:90;background:rgba(20,26,22,.82);display:none;align-items:center;justify-content:center;padding:24px}
+.film.open{display:flex}
+.film .box{width:min(1100px,96vw);position:relative}
+.film video{width:100%;border-radius:18px;display:block;background:#000}
+.film .x{position:absolute;top:-46px;right:0;background:none;border:0;color:#fff;font-size:30px}
+
+/* map */
+.map-wrap{display:grid;grid-template-columns:1fr 340px;gap:20px}
+.map-card{padding:18px;position:relative}
+#worldmap{width:100%;height:auto;display:block}
+.map-tip{position:absolute;pointer-events:none;background:var(--ink);color:#fff;font-size:14px;padding:10px 12px;border-radius:10px;max-width:260px;display:none;z-index:5}
+.site-list{padding:8px;max-height:620px;overflow:auto}
+.site-list button{display:block;width:100%;text-align:left;border:0;background:none;padding:12px 14px;border-radius:12px;color:var(--ink)}
+.site-list button:hover,.site-list button.sel{background:var(--sage-t)}
+.site-list b{display:block;font-size:16px}
+.site-list span{font-size:13px;color:var(--soft)}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.legend .chip{padding:8px 14px;font-size:14px;display:flex;align-items:center;gap:8px}
+.legend .chip i{width:12px;height:12px;border-radius:50%;display:inline-block}
+.loader{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:14px;font-size:15px;color:var(--soft)}
+
+/* brief */
+.brief{max-width:820px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:10px;padding:56px 60px;box-shadow:0 30px 60px -40px rgba(0,0,0,.35)}
+.brief .hdr{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--forest);padding-bottom:14px;margin-bottom:26px}
+.brief h1{font-family:var(--serif);font-size:44px;font-weight:600;line-height:1.05;margin:6px 0 10px}
+.brief h2{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin:24px 0 8px}
+.brief p,.brief li{font-size:16px}
+.brief ul{padding-left:20px}
+.brief .cols{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.brief .foot{margin-top:30px;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--soft);display:flex;justify-content:space-between}
+.brief-acts{display:flex;gap:12px;justify-content:center;margin:0 0 26px;flex-wrap:wrap}
+
+/* about */
+.values{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.values .card{padding:26px}
+.values h3{font-family:var(--serif);font-size:22px;font-weight:600;margin:8px 0 6px}
+.values p{font-size:16px;color:var(--soft)}
+.person{display:grid;grid-template-columns:200px 1fr;gap:30px;padding:32px;align-items:center}
+.avatar{width:200px;height:200px;border-radius:50%;background:var(--sage-t);display:grid;place-items:center;font-family:var(--serif);font-size:64px;color:var(--forest);border:1px dashed var(--sage)}
+
+.lang{display:flex;gap:2px;font-family:var(--mono);font-size:12px}
+.lang button{border:0;background:none;padding:6px 7px;border-radius:8px;color:var(--soft);letter-spacing:.08em}
+.lang button[aria-pressed="true"]{color:var(--forest);font-weight:600;background:var(--sage-t)}
+
+@media (max-width:1080px){
+  .p-hero,.map-wrap,.two{grid-template-columns:1fr}
+  .steps4,.mini-tools,.values,.anim-steps{grid-template-columns:repeat(2,1fr)}
+  .ben3{grid-template-columns:1fr}
+  .site-list{max-height:320px}
+}
+@media (max-width:760px){
+  .steps4,.mini-tools,.values,.anim-steps{grid-template-columns:1fr}
+  .brief{padding:32px 24px}.brief .cols{grid-template-columns:1fr}
+  .person{grid-template-columns:1fr;text-align:center;justify-items:center}
+  .strip{padding:30px 24px}
+  .lang{display:none}
+}
+@media print{header.top,footer,.brief-acts,.crumb{display:none!important}#page{padding:0}.brief{box-shadow:none;border:0}}
+
+</style>
+</head>
+<body data-depth="plain">
+<a class="skip" href="#start">Skip the story</a>
+
+<header class="top" id="top">
+  <div class="wrap bar">
+    <a href="#story" class="logo" aria-label="NbS+C home">NbS<b>+</b>C</a>
+    <nav class="main" aria-label="Main">
+      <a href="#solutions">Solutions</a>
+      <a href="#tools">Tools</a>
+      <a href="#services">Services</a>
+      <a href="#projects">Projects</a>
+      <a href="#about">About</a>
+    </nav>
+    <div class="right">
+      <button class="search-btn" id="openSearch" aria-label="Search the site"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span>Search</span><kbd>Ctrl K</kbd></button>
+      <div class="depth" role="group" aria-label="Explanation depth">
+        <button aria-pressed="true" data-d="plain">Mayor</button>
+        <button aria-pressed="false" data-d="tech">Engineer</button>
+      </div>
+      <a href="#contact" class="btn primary small">Book a 20-min call</a>
+      <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false">☰</button>
+    </div>
+  </div>
+</header>
+
+<main>
+<div id="home">
+<!-- ================= STORY ================= -->
+<section id="story" aria-label="How Nature-based Solutions work, in five steps">
+  <div class="stage">
+    <div class="chapters">
+      <div class="chap on" data-i="0">
+        <div class="mono">Nature-based Solutions for water</div>
+        <h1>Let nature<br><em>do the work.</em></h1>
+        <p class="plain">Wetlands, forests and floodplains that hold, clean and store water. We help you put the right one in the right place, and prove that it works.</p>
+        <p class="tech">Spatial planning, design, coupled surface and groundwater modelling and remote-sensing monitoring for Nature-based Solutions, from site to catchment scale.</p>
+      </div>
+      <div class="chap" data-i="1">
+        <div class="mono">01 · Site selection</div>
+        <h2>Find where nature<br><em>helps most.</em></h2>
+        <p class="plain">We stack terrain, soil, water, land use and climate, weigh what matters to you, and map the best places for each solution.</p>
+        <p class="tech"><abbr class="g" tabindex="0" data-tip="Analytic Hierarchy Process: you compare criteria two at a time and the method turns that into consistent weights.">AHP</abbr> weighting and multi-criteria overlay of terrain, soils, hydrogeology, land cover and climate data, giving one suitability map per NbS type, with optional machine learning for aquifer recharge.</p>
+        <div class="acts"><a class="btn ghost small" href="#tools">Suitability Explorer <span class="arr">→</span></a></div>
+      </div>
+      <div class="chap" data-i="2">
+        <div class="mono">02 · Design</div>
+        <h2>Shaped to<br><em>the place.</em></h2>
+        <p class="plain">Size, depth, planting and layout, designed for the site and for the climate it will face.</p>
+        <p class="tech">Measure dimensioning and layout from site hydrology, soils and storage needs, with species and planting plans matched to local climate projections.</p>
+        <div class="acts"><a class="btn ghost small" href="#solutions">See the solutions <span class="arr">→</span></a></div>
+      </div>
+      <div class="chap" data-i="3">
+        <div class="mono">03 · Modelling</div>
+        <h2>Prove it<br><em>before you build.</em></h2>
+        <p class="plain">Our models follow water above and below ground, so you see what changes with and without the measure: flood peaks, summer river flow and groundwater.</p>
+        <p class="tech">Distributed geohydrological modelling coupled to groundwater (SWAT+ with MODFLOW or gwflow), scenario runs with and without NbS, and climate stress tests.</p>
+        <div class="acts"><a class="btn ghost small" href="#compare">Try with / without <span class="arr">→</span></a></div>
+      </div>
+      <div class="chap" data-i="4">
+        <div class="mono">04 · Monitoring</div>
+        <h2>Track it.<br><em>Learn. Repeat.</em></h2>
+        <p class="plain">Satellites, drones and field sensors follow how the site performs, season after season.</p>
+        <p class="tech">Sentinel-1, Sentinel-2 and Landsat time series for vegetation, water and biomass, combined with drone surveys and in-situ sensors.</p>
+        <div class="acts"><a class="btn ghost small" href="#tools">Meet nbsmonitor <span class="arr">→</span></a></div>
+      </div>
+      <div class="chap" data-i="5">
+        <div class="mono">The NbS+C approach</div>
+        <h2>Not a line.<br><em>A loop.</em></h2>
+        <p class="plain">Every result sharpens the next decision. Start with one step or the whole loop.</p>
+        <p class="tech">Monitoring data feed back into model calibration and the next round of site selection and design.</p>
+        <div class="acts"><a class="btn primary" href="#contact">Book a 20-min call <span class="arr">→</span></a><a class="btn ghost" href="#finder">Find my solution</a><button class="btn ghost" data-film="journey">▶ 30 s film</button></div>
+      </div>
+    </div>
+    <div class="canvas-wrap">
+      <canvas id="scene" role="img" aria-label="Animated landscape: a water drop becomes a landscape that is mapped, designed, modelled and monitored"></canvas>
+      <div class="dots" id="dots"></div>
+    </div>
+  </div>
+  <div class="counter" aria-hidden="true"><span class="mono" id="cnum">00 / 05</span><div class="track"><i id="cbar"></i></div></div>
+  <div class="hint" id="hint" aria-hidden="true">SCROLL<span></span></div>
+</section>
+
+<!-- ================= START HERE ================= -->
+<section class="blk" id="start">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="mono">Start here</div>
+      <h2>Tell us who you are. <em>We'll show you the way in.</em></h2>
+    </div>
+    <div class="persona-row reveal" role="group" aria-label="Choose who you are" id="personaRow"></div>
+    <div class="card persona-panel reveal" id="personaPanel" aria-live="polite"></div>
+  </div>
+</section>
+
+<!-- ================= FINDER ================= -->
+<section class="blk alt" id="finder">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="mono">Quick finder · 30 seconds</div>
+      <h2>What's your challenge? <em>Three taps to a starting point.</em></h2>
+      <p>No sign-up. You get the solutions worth looking at, the tool that tests them and a sensible first step.</p>
+    </div>
+    <div class="finder">
+      <div>
+        <div class="card q reveal"><div class="mono">1 / 3</div><h3>What worries you most?</h3><div class="opts" data-q="ch"></div></div>
+        <div class="card q reveal"><div class="mono">2 / 3</div><h3>What kind of landscape?</h3><div class="opts" data-q="ls"></div></div>
+        <div class="card q reveal"><div class="mono">3 / 3</div><h3>How big is the area?</h3><div class="opts" data-q="sc"></div></div>
+      </div>
+      <div class="card result reveal" id="result" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SOLUTIONS ================= -->
+<section class="blk" id="solutions">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="mono">Solutions</div>
+      <h2>Eight ways nature <em>handles water.</em></h2>
+    </div>
+    <div class="three reveal">
+      <div><b>What it is</b><span>Natural features that slow, store, clean or recharge water.</span></div>
+      <div><b>Why it matters</b><span>They cut flood and drought risk while adding habitat and value.</span></div>
+      <div><b>What you get</b><span>The right measure for your site, with its benefits made visible.</span></div>
+    </div>
+    <div class="sol-grid" id="solGrid"></div>
+  </div>
+</section>
+
+<!-- ================= TOOLS ================= -->
+<section class="blk alt" id="tools">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="mono">The NbS+C platform</div>
+      <h2>Tools that turn questions <em>into answers.</em></h2>
+      <p>Each one answers a plain question. Under the hood: open data, coupled models and remote sensing.</p>
+    </div>
+    <div class="tool-grid" id="toolGrid"></div>
+  </div>
+</section>
+
+<!-- ================= COMPARE ================= -->
+<section class="blk" id="compare">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="mono">With / without</div>
+      <h2>Drag the slider. <em>Watch the flood shrink.</em></h2>
+      <p>This is what our models show for real catchments. Here with illustrative numbers so you can feel how it works.</p>
+    </div>
+    <div class="compare">
+      <div class="card reveal">
+        <svg id="cmpLand" viewBox="0 0 520 300" width="100%" aria-hidden="true"></svg>
+        <label for="cov" style="font-weight:700;display:block;margin-top:18px">Nature-based Solutions in the catchment: <span id="covv">0%</span></label>
+        <input type="range" min="0" max="100" value="0" id="cov" class="range">
+        <div class="note">Illustrative example · not a model result</div>
+      </div>
+      <div class="card reveal">
+        <svg id="cmpChart" viewBox="0 0 620 330" width="100%" aria-label="River flow over a storm, without and with Nature-based Solutions"></svg>
+        <div class="kpis">
+          <div class="kpi"><b id="k1">0%</b><span>lower flood peak</span></div>
+          <div class="kpi"><b id="k2">0%</b><span>more summer river flow</span></div>
+          <div class="kpi"><b id="k3">0%</b><span>more groundwater recharge</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= STUDIO ================= -->
+<section class="blk alt" id="studio">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="mono">CRIDA-NbS Studio · preview</div>
+      <h2>Build your own plan. <em>Then see if it holds.</em></h2>
+      <p>In workshops, stakeholders place measures on a real, calibrated catchment model, stress-test it against future climate and compare with an automatic optimiser. Try a pocket version.</p>
+    </div>
+    <div class="studio">
+      <div class="card reveal">
+        <div class="mono">Pick a measure, then tap fields</div>
+        <div class="palette" id="palette"></div>
+        <div class="board" id="board" aria-label="Catchment board, 8 by 5 fields"></div>
+        <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">
+          <button class="btn ghost small" id="optBtn">Compare with optimiser</button>
+          <button class="btn ghost small" id="clrBtn">Clear</button>
+        </div>
+      </div>
+      <div class="card reveal">
+        <div class="mono">Your plan under a drier, stormier future</div>
+        <div class="bars" id="bars"></div>
+        <p class="note" id="optNote">Gold marks show the optimiser's plan once you compare.</p>
+        <div class="note">Illustrative scoring · real workshops run the full model</div>
+      </div>
+    </div>
+    <div class="card iucn reveal">
+      <div>
+        <div class="mono">IUCN Global Standard · quick self-check</div>
+        <h3 style="font-family:var(--serif);font-size:28px;font-weight:600;margin:8px 0 6px">Is your idea a true Nature-based Solution?</h3>
+        <p style="color:var(--soft);font-size:16px;margin-bottom:10px">Eight criteria, in plain words. Answer honestly; the shape tells you where to work next.</p>
+        <div id="iucnQs"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center">
+        <svg id="radar" viewBox="0 0 340 340" width="100%" aria-label="Radar chart of your answers"></svg>
+        <div id="iucnScore" style="font-family:var(--serif);font-size:22px;font-weight:600;text-align:center"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SERVICES ================= -->
+<section class="blk" id="services">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="mono">Services</div>
+      <h2>Four steps. <em>Start with one, or the whole loop.</em></h2>
+    </div>
+    <div class="loop" id="loop"></div>
+  </div>
+</section>
+
+<!-- ================= PROJECTS ================= -->
+<section class="blk alt" id="projects">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="mono">Projects</div>
+      <h2>Where the loop <em>is already turning.</em></h2>
+      <p>Our own projects below, and Nature-based Solutions at work worldwide on the <a href="#map">global NbS map</a>.</p>
+    </div>
+    <div class="proj-grid" id="projGrid"></div>
+  </div>
+</section>
+
+<!-- ================= CONTACT ================= -->
+<section class="blk" id="contact">
+  <div class="wrap">
+    <div class="cta reveal">
+      <div>
+        <div class="mono" style="color:var(--gold-s)">Let's talk</div>
+        <h2>Bring a question. <em>Leave with a plan.</em></h2>
+        <p>Tell us about your site or catchment. In twenty minutes we'll tell you which step to start with, which tool fits, and what you'd get back.</p>
+        <p style="font-size:15px">NbS+C works with research from Vrije Universiteit Brussel (VUB) on water, groundwater and Nature-based Solutions.</p>
+        <p style="font-size:15px">Email: <span id="mail">hello@your-domain.eu</span> <span class="ph" style="color:var(--gold-s);border-color:var(--gold-s)">Placeholder</span></p>
+      </div>
+      <form id="form" novalidate>
+        <input required name="name" placeholder="Your name" aria-label="Your name">
+        <input required name="org" placeholder="Organisation" aria-label="Organisation">
+        <select name="topic" aria-label="Topic">
+          <option>Site selection</option><option>Design</option><option>Modelling</option><option>Monitoring</option><option>The whole loop</option><option>Something else</option>
+        </select>
+        <textarea name="msg" rows="4" placeholder="Your site, your challenge, your timeline" aria-label="Message"></textarea>
+        <button class="btn primary" type="submit">Request a call <span class="arr">→</span></button>
+        <div class="msg" id="formMsg" role="status"></div>
+      </form>
+    </div>
+  </div>
+</section>
+</div>
+<div id="page" hidden></div>
+</main>
+
+<footer>
+  <div class="wrap row">
+    <div><span class="logo" style="font-size:22px">NbS<b>+</b>C</span><br>Designing resilience with nature.</div>
+    <div><a href="#solutions">Solutions</a> · <a href="#tools">Tools</a> · <a href="#services">Services</a> · <a href="#projects">Projects</a> · <a href="#map">Global map</a> · <a href="#about">About</a></div>
+    <div>© NbS+C</div>
+  </div>
+</footer>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-label="Search">
+  <div class="sbox">
+    <input id="sq" placeholder="Search solutions, tools, steps, projects…" aria-label="Search">
+    <ul id="sres"></ul>
+    <div class="foot">↑ ↓ to move · Enter to open · Esc to close</div>
+  </div>
+</div>
+
+<script type="application/json" id="content">{"solutions": [{"id": "wetland", "n": "Wetlands", "t": "Store & clean water", "d": "A shallow, planted area where runoff lands. It holds water back after storms, lets sediment settle and plants take up nutrients.", "env": ["Cleaner water", "Habitat for birds, amphibians and insects", "Carbon stored in wet soils"], "eco": ["Lower flood damage downstream", "Cheaper than treating water later"], "soc": ["Green space to walk and learn", "Visible, tangible climate action"], "video": "wetland", "fits": "Low-lying fields, valley floors and spots next to streams where water already gathers.", "steps": [{"h": "The problem", "p": "Rain races off the fields and the river rises fast."}, {"h": "Make room", "p": "A shallow basin is shaped where runoff collects, then planted."}, {"h": "How it works", "p": "Water pauses, sediment settles, plants take up nutrients, and water seeps slowly on."}, {"h": "What you gain", "p": "Lower flood peaks, cleaner water and more wildlife."}], "tech": "Peak attenuation depends on storage volume, residence time and outlet control. We model it as a storage element with infiltration and evaporation losses, sized against design storms.", "tools": ["suitability", "catchment", "coupled", "monitor"]}, {"id": "buffer", "n": "Riparian buffers", "t": "Protect riverbanks", "d": "Strips of trees, shrubs and grass along streams. Roots hold the bank and the strip traps soil and fertiliser before it reaches the water.", "env": ["Less sediment and nutrients in rivers", "Shade keeps water cool for fish", "Wildlife corridors"], "eco": ["Less bank repair", "Keeps topsoil on farmland"], "soc": ["Attractive river landscapes", "Space for recreation"], "video": "buffer", "fits": "Along streams and ditches running through farmland or bare banks.", "steps": [{"h": "The problem", "p": "Soil and fertiliser wash off bare banks into the river."}, {"h": "Plant the banks", "p": "Strips of trees, shrubs and grass are planted on both sides."}, {"h": "How it works", "p": "The strip traps soil, roots grip the bank and the canopy shades the water."}, {"h": "What you gain", "p": "Clearer, cooler rivers and stable banks."}], "tech": "Buffer width, slope and vegetation type set sediment and nutrient trapping efficiency. Represented as filter strips and riparian land-use change in the catchment model.", "tools": ["suitability", "coupled", "monitor"]}, {"id": "forest", "n": "Afforestation", "t": "Cool & hold soil", "d": "Native trees on slopes and degraded land. The canopy catches rain, roots open the soil so water soaks in, and shade cools the land.", "env": ["Less erosion", "More infiltration", "Carbon storage and biodiversity"], "eco": ["Timber and non-timber products", "Protects downstream infrastructure"], "soc": ["Cooler, healthier places", "Jobs in planting and care"], "video": "forest", "fits": "Slopes, degraded land, headwater areas and the edges of towns.", "steps": [{"h": "The problem", "p": "Bare slopes bake in the sun and erode in storms."}, {"h": "Plant the slope", "p": "Native trees, chosen for soil and future climate."}, {"h": "How it works", "p": "The canopy catches rain, roots open the soil and shade cools the land."}, {"h": "What you gain", "p": "Soil kept in place, cooler land and stored carbon."}], "tech": "Interception, higher infiltration capacity and changed evapotranspiration alter the water balance. Species choice is checked against projected climate to avoid net water losses.", "tools": ["suitability", "catchment", "monitor"]}, {"id": "flood", "n": "Floodplain reconnection", "t": "Absorb flood peaks", "d": "Give the river room by lowering or setting back dykes, so high water spreads safely over meadows instead of rushing downstream.", "env": ["Lower peaks downstream", "Rich wetland habitat", "Recharge of shallow groundwater"], "eco": ["Avoided damage in towns", "Fertile grazing land"], "soc": ["Safer communities", "New nature areas"], "video": "flood", "fits": "River valleys with meadows or low-value land behind dykes.", "steps": [{"h": "The problem", "p": "A river squeezed between levees pushes the flood downstream."}, {"h": "Give it room", "p": "Dykes are lowered or set back; old meanders reconnected."}, {"h": "How it works", "p": "High water spreads over the floodplain, slows down and soaks in."}, {"h": "What you gain", "p": "Lower peaks downstream and rich wetland habitat."}], "tech": "Assessed with the hydrodynamic module: historical floods are reproduced, then dyke lowering or set-back is simulated for flood extent, depth, recharge and water-table response.", "tools": ["suitability", "catchment", "groundwater", "monitor"]}, {"id": "mar", "n": "Aquifer recharge", "t": "Refill groundwater", "d": "Basins, infiltration fields or wetlands placed where water can soak down to the aquifer, banking it for dry periods.", "env": ["Higher water tables", "Rivers keep flowing in dry spells", "Healthier wetlands and soils"], "eco": ["Secure water for farms and industry", "Fewer drought losses"], "soc": ["Reliable drinking water", "Resilience to heatwaves"], "video": "aquifer", "fits": "Permeable soils above an aquifer with spare storage, near a reliable water source.", "steps": [{"h": "The problem", "p": "The water table keeps falling and wells run low."}, {"h": "Build a basin", "p": "An infiltration basin or field where water can soak in."}, {"h": "How it works", "p": "Water seeps down through the soil and refills the aquifer."}, {"h": "What you gain", "p": "Water banked for dry periods and rivers that keep flowing."}], "tech": "Site suitability combines soil permeability, unsaturated-zone thickness, aquifer storage and source water. Groundwater response is simulated with a MODFLOW model; a machine-learning cross-check is available.", "tools": ["suitability", "groundwater", "coupled", "monitor"]}, {"id": "pond", "n": "Ponds", "t": "Hold water on the land", "d": "A field corner becomes a small reservoir, filling in wet times and releasing slowly or serving as a water source in dry times.", "env": ["Habitat for amphibians", "Local water storage"], "eco": ["Irrigation reserve", "Low cost to build"], "soc": ["Landscape diversity"], "video": null, "fits": "Field corners, small side valleys and farmyards.", "steps": [{"h": "The problem", "p": "Water runs off in winter and is missing in summer."}, {"h": "Dig a pond", "p": "A small reservoir is shaped and its banks planted."}, {"h": "How it works", "p": "It fills in wet periods and releases slowly or supplies water later."}, {"h": "What you gain", "p": "Local storage, habitat and a summer reserve."}], "tech": "Represented as a reservoir with storage-discharge relation and seepage, fed by the local stream or field drainage.", "tools": ["suitability", "coupled"]}, {"id": "cwet", "n": "Constructed wetlands", "t": "Treat water in-stream", "d": "An engineered wetland in or beside a ditch or stream that intercepts flow and cleans it before it moves on.", "env": ["Removes nutrients and some pollutants", "New habitat"], "eco": ["Low-energy water treatment", "Low maintenance"], "soc": ["Educational sites"], "video": null, "fits": "Ditches and streams downstream of farms, drains or outfalls.", "steps": [{"h": "The problem", "p": "Nutrients and pollutants reach the stream untreated."}, {"h": "Build in the stream", "p": "A planted wetland intercepts the flow."}, {"h": "How it works", "p": "Slower water lets plants and microbes remove nutrients."}, {"h": "What you gain", "p": "Cleaner water at low energy cost."}], "tech": "In-stream wetland treated as a storage and retention element; nutrient removal follows first-order kinetics with temperature dependence.", "tools": ["coupled", "quality", "monitor"]}, {"id": "farm", "n": "Farm measures", "t": "Catch rain at source", "d": "Cover crops, reduced tillage, hedgerows and grassed waterways keep water and soil where they fall.", "env": ["Better soil structure", "Less runoff and erosion"], "eco": ["Healthier yields over time", "Lower input costs"], "soc": ["Farmers as stewards"], "video": null, "fits": "Arable fields and grassland across the whole catchment.", "steps": [{"h": "The problem", "p": "Bare soil sheds water and topsoil after every storm."}, {"h": "Change practice", "p": "Cover crops, reduced tillage, hedgerows, grassed waterways."}, {"h": "How it works", "p": "Water and soil stay where they fall; the soil sponge improves."}, {"h": "What you gain", "p": "Less runoff, healthier soils and steadier yields."}], "tech": "Implemented as management changes (tillage, cover crops, curve-number and residue changes) and small land-use changes in the catchment model.", "tools": ["suitability", "coupled"]}], "tools": [{"n": "NbS Suitability Explorer", "s": "Live", "c": "live", "q": "Where should each solution go?", "d": "Draw or upload your area, set your priorities, get one suitability map per solution, in 2D and 3D.", "w": "Planners · municipalities · students", "feat": true, "pv": "grid", "id": "suitability", "image": "media/suitability-gui.jpg", "video": "site", "plain": "Draw or upload your study area, tell the tool what matters most, and get a map for each Nature-based Solution showing where it fits best, with benefits, costs and priority sites.", "tech": "Web application running a weighted multi-criteria (AHP) overlay on open datasets: Copernicus and ERA5 in Europe, global datasets elsewhere. Outputs per-NbS suitability classes, area statistics, monetised benefit ranges and an optional machine-learning comparison.", "inputs": ["Your study area: draw it, upload it or pick a catchment", "Your priorities, set with simple sliders or pairwise comparisons", "Open data on terrain, soils, climate, land use and groundwater"], "outputs": ["One suitability map per solution, in 2D and 3D", "Hectares per class and a ranked list of priority sites", "Benefit, cost and risk indicators", "Optional machine-learning cross-check"], "session": ["Define the area", "Set priorities", "Run the analysis", "Explore, compare and export"]}, {"n": "Catchment geohydrological model", "s": "Pilot", "c": "pilot", "q": "What happens to floods, recharge and evaporation?", "d": "A fully distributed model with a simple flood module to test solutions over time.", "w": "Water agencies · engineers", "pv": "flow", "id": "catchment", "image": null, "video": "model", "plain": "A digital twin of your catchment that follows rain from the sky to the river and into the ground, so you can test Nature-based Solutions over years and under future climates.", "tech": "Fully distributed, semi-physically based geohydrological model with a simple hydrodynamic module. Calibrated on streamflow, groundwater heads, remotely sensed flood extents and evapotranspiration or soil moisture. Runs from small catchments at 25 to 50 m resolution up to large basins at 250 m.", "inputs": ["Terrain, soils, land use and climate", "Streamflow, groundwater levels and flood maps for calibration", "The measures you want to test"], "outputs": ["River flow, floods, recharge and evaporation over time", "With and without NbS scenarios", "Climate stress tests", "Maps of where water goes"], "session": ["Set up and calibrate", "Add measures", "Run scenarios", "Compare and report"]}, {"n": "NbS+C Groundwater Model", "s": "Pilot", "c": "pilot", "q": "How will groundwater respond?", "d": "Builds a working MODFLOW model for any area, ready to couple with surface water.", "w": "Hydrogeologists · utilities", "pv": "gw", "id": "groundwater", "image": null, "video": null, "plain": "Builds a working groundwater model for your area automatically, so you can see how the water table responds to recharge, wells and Nature-based Solutions.", "tech": "Automated MODFLOW model builder: study area from a catchment polygon, a drawing or a shapefile; layering, hydraulic conductivity and heads from DOV in Flanders and global datasets elsewhere; customary boundary conditions; selectable grid and refinement; recharge from precipitation minus evapotranspiration.", "inputs": ["A study area", "Geology and well data (automatic where available)", "Recharge scenarios"], "outputs": ["Groundwater heads and water-table maps", "Response to recharge and pumping", "A model ready to couple with surface water"], "session": ["Choose the area", "Build the model", "Check and calibrate", "Run scenarios"]}, {"n": "Coupled SWAT+ / MODFLOW", "s": "Pilot", "c": "pilot", "q": "With or without the measure?", "d": "Surface and groundwater solved together, with NbS switched on or off.", "w": "Researchers · river basin managers", "pv": "flow", "id": "coupled", "image": null, "video": "model", "plain": "Surface water and groundwater solved together, so the hidden benefits of Nature-based Solutions, like recharge and summer river flow, show up in the numbers.", "tech": "SWAT+ coupled to MODFLOW or gwflow. NbS are implemented as land-use, management and storage measures following a SWATmeasR-style workflow, with with/without comparison and multi-objective optimisation of measure portfolios.", "inputs": ["A SWAT+ catchment setup", "A groundwater model", "Candidate measures and locations"], "outputs": ["Flow, nutrients and groundwater exchange", "With and without comparisons", "Optimised portfolios of measures"], "session": ["Couple the models", "Implement measures", "Run and compare", "Optimise"]}, {"n": "nbsmonitor", "s": "Pilot", "c": "pilot", "q": "Is it working, year after year?", "d": "Tracks vegetation, water and biomass with Sentinel-1, Sentinel-2 and Landsat.", "w": "Site managers · funders", "pv": "sat", "id": "monitor", "image": null, "video": "monitor", "plain": "Follows your Nature-based Solution from space, season after season: is the vegetation growing, is the water there, is the site recovering?", "tech": "Web tool built on Sentinel-1, Sentinel-2 and Landsat time series: vegetation indices, surface water extent, biomass proxies and change detection, compared before and after implementation and against reference sites.", "inputs": ["The outline of your site", "The date the measure was built", "Optional reference sites"], "outputs": ["Vegetation, water and biomass trends", "Before and after comparison", "A yearly performance summary"], "session": ["Draw the site", "Pick the indicators", "Review trends", "Share the report"]}, {"n": "CRIDA-NbS Studio", "s": "In development", "c": "", "q": "Which plan holds up in a changing climate?", "d": "Stakeholders build plans on a calibrated model, stress-test them and score them against the IUCN Global Standard.", "w": "Stakeholder workshops · policy", "feat": true, "pv": "studio", "id": "studio", "image": null, "video": null, "plain": "A workshop tool where stakeholders build their own plan on a real catchment model, test it against future climate and check it against the IUCN Global Standard, in a way that is easy and fun.", "tech": "Digitises the UNESCO CRIDA process on a calibrated, validated catchment model: climate stress test, stakeholder placement of measures, comparison with automatic optimisation, and scoring against a simplified version of the IUCN Global Standard for NbS (2nd edition).", "inputs": ["A calibrated catchment model (browse to the project)", "Climate data already prepared for the model", "Stakeholders and their goals"], "outputs": ["Stakeholder plans and their outcomes", "Comparison with the optimiser", "IUCN Global Standard scores", "A shared, documented decision"], "session": ["Frame the decision", "Stress-test the climate", "Build plans together", "Compare, score and choose"]}, {"n": "Water quality & PFAS module", "s": "Coming soon", "c": "", "q": "Can nature reduce pollution?", "d": "Extends the catchment model to nutrients, PFAS and other substances.", "w": "Regulators · utilities", "pv": "q", "id": "quality", "image": null, "video": null, "plain": "Extends the catchment model to pollution, so you can see how much Nature-based Solutions reduce nutrients, PFAS and other substances in rivers and groundwater.", "tech": "Distributed fate and transport of PFAS and other substances in soil, groundwater and surface water, calibrated on observations, coupled to the multilayer groundwater model, with NbS scenario assessment.", "inputs": ["Observed concentrations", "Sources and land use", "Measures to test"], "outputs": ["Concentrations in rivers and groundwater", "Load reductions per measure", "Hotspot maps"], "session": ["Map the sources", "Calibrate", "Test measures", "Report"]}, {"n": "Sponge Valley", "s": "Prototype", "c": "", "q": "Can a game teach it?", "d": "A browser game where kids and adults build a valley that soaks up floods and droughts.", "w": "Schools · public events", "pv": "game", "id": "game", "image": null, "video": null, "plain": "A browser game where children and adults build a valley that can soak up floods and survive droughts, and discover why nature is such a good engineer.", "tech": "Educational browser game on a simplified Flemish catchment; game rules reflect the same water balance logic as our models.", "inputs": ["Curiosity"], "outputs": ["Understanding of how NbS work", "A score to beat"], "session": ["Pick a valley", "Place solutions", "Face the weather", "Share your score"]}], "sites": [{"n": "Room for the River, Nijmegen", "lat": 51.85, "lon": 5.87, "type": "Floodplains", "country": "Netherlands", "note": "Dyke set back and a new side channel give the Waal room."}, {"n": "Kruibeke-Bazel-Rupelmonde (Sigmaplan)", "lat": 51.16, "lon": 4.31, "type": "Floodplains", "country": "Belgium", "note": "Controlled flood area and tidal nature along the Scheldt."}, {"n": "Emscher river restoration", "lat": 51.53, "lon": 7.1, "type": "Rivers & riparian", "country": "Germany", "note": "A concrete sewer channel turned back into a living river."}, {"n": "Isar renaturation, Munich", "lat": 48.11, "lon": 11.57, "type": "Rivers & riparian", "country": "Germany", "note": "Widened banks and gravel beds through the city."}, {"n": "Cheonggyecheon, Seoul", "lat": 37.57, "lon": 126.98, "type": "Rivers & riparian", "country": "South Korea", "note": "An urban stream uncovered from under a motorway."}, {"n": "Kristianstads Vattenrike", "lat": 56.03, "lon": 14.16, "type": "Wetlands", "country": "Sweden", "note": "Wet meadows managed for water, birds and people."}, {"n": "Danube Delta restoration", "lat": 45.2, "lon": 29.4, "type": "Wetlands", "country": "Romania", "note": "Polders reconnected to the delta."}, {"n": "Kissimmee River restoration", "lat": 27.6, "lon": -81.1, "type": "Wetlands", "country": "United States", "note": "A straightened canal returned to meanders and marsh."}, {"n": "Yolo Bypass", "lat": 38.6, "lon": -121.6, "type": "Floodplains", "country": "United States", "note": "A floodplain that carries flood water and feeds fish habitat."}, {"n": "Napa River Flood Project", "lat": 38.3, "lon": -122.28, "type": "Floodplains", "country": "United States", "note": "A living river approach to flood protection."}, {"n": "Loess Plateau rehabilitation", "lat": 36.6, "lon": 109.5, "type": "Forests & slopes", "country": "China", "note": "Terraces and vegetation on a vast eroding plateau."}, {"n": "Great Green Wall, Senegal", "lat": 15.6, "lon": -15.3, "type": "Forests & slopes", "country": "Senegal", "note": "Drylands replanted across the Sahel."}, {"n": "Abreha we Atsbeha watershed", "lat": 13.85, "lon": 39.63, "type": "Aquifer recharge", "country": "Ethiopia", "note": "Area closures and check dams that raised groundwater."}, {"n": "Johads of Alwar", "lat": 27.55, "lon": 76.6, "type": "Aquifer recharge", "country": "India", "note": "Small earthen dams that brought rivers back."}]}</script>
+<script>
+const CONTENT=JSON.parse(document.getElementById('content').textContent);
+/* =====================================================================
+   SCROLL STORY RENDERER  (canvas, 1000 x 1000 logical units)
+   ===================================================================== */
+(function(){
+const cv=document.getElementById('scene'), ctx=cv.getContext('2d');
+const COL={forest:'#21492E',gold:'#B88A4E',cream:'#F7F4ED',leaf:'#3D7350',sage:'#8AA98F',sageT:'#EAF0EA',mist:'#C3D2C4',goldS:'#D9C08A',water:'#5B8A9E',ink:'#2B322D',soft:'#5C665E',line:'#E4E0D5',rust:'#B0472F',tan1:'#E2D5B8',tan2:'#C9B48A',tan3:'#B79B6B',aq:'#C9D7DC',rock:'#C8C1B3',card:'#FBF9F4'};
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let DPR=1,SC=1;
+function resize(){DPR=Math.min(window.devicePixelRatio||1,2);const r=cv.getBoundingClientRect();cv.width=Math.round(r.width*DPR);cv.height=Math.round(r.height*DPR);SC=cv.width/1000;}
+addEventListener('resize',resize);resize();
+
+const cl=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const pr=(t,a,b)=>cl((t-a)/(b-a));
+const eo=x=>1-Math.pow(1-x,3);
+const eio=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const eback=x=>{if(x<=0)return 0;const c1=1.5,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2);};
+const lerp=(a,b,t)=>a+(b-a)*t;
+const h01=(i,j)=>{const x=Math.sin(i*12.9898+j*78.233)*43758.5453;return x-Math.floor(x);};
+function mix(c1,c2,t){const a=parseInt(c1.slice(1),16),b=parseInt(c2.slice(1),16);const r=Math.round(lerp(a>>16,b>>16,t)),g=Math.round(lerp((a>>8)&255,(b>>8)&255,t)),bl=Math.round(lerp(a&255,b&255,t));return `rgb(${r},${g},${bl})`;}
+
+// iso diorama
+let CX=500,CY=560,HW=320,HH=185;
+const P=(u,v,h=0)=>[CX+(u-v)*HW, CY+(u+v-1)*HH-h];
+function isoT(h=0){ctx.transform(HW,HH,-HW,HH,CX,CY-HH-h);}
+function poly(pts){ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);ctx.closePath();}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function txt(s,x,y,size,col,{w=600,fam='Manrope',align='left',a=1,ls=0}={}){ctx.save();ctx.globalAlpha*=a;ctx.fillStyle=col;ctx.font=`${w} ${size}px ${fam}`;ctx.textAlign=align;ctx.textBaseline='alphabetic';if(ls&&'letterSpacing' in ctx)ctx.letterSpacing=ls+'px';ctx.fillText(s,x,y);ctx.restore();}
+let PILLQ=null;function pill(s,x,y,a,bg=COL.card,fg=COL.forest){if(a<=0)return;if(PILLQ){PILLQ.push([s,x,y,a,bg,fg]);return;}ctx.save();ctx.globalAlpha*=a;ctx.font='700 22px Manrope';const w=ctx.measureText(s).width+36;rr(x-w/2,y-22,w,44,22);ctx.fillStyle=bg;ctx.shadowColor='rgba(33,73,46,.18)';ctx.shadowBlur=18;ctx.shadowOffsetY=6;ctx.fill();ctx.shadowColor='transparent';ctx.fillStyle=fg;ctx.textAlign='center';ctx.fillText(s,x,y+8);ctx.restore();}
+function tree(x,y,s,col=COL.forest,a=1){if(s<=0)return;ctx.save();ctx.globalAlpha*=a;ctx.fillStyle='#5A3D28';ctx.fillRect(x-3*s,y-24*s,6*s,24*s);ctx.fillStyle=col;[[0,-40,19],[-14,-29,14],[14,-29,14]].forEach(([dx,dy,r])=>{ctx.beginPath();ctx.arc(x+dx*s,y+dy*s,r*s,0,7);ctx.fill();});ctx.restore();}
+function reed(x,y,h,lean=0){if(h<=0)return;ctx.strokeStyle=COL.forest;ctx.lineWidth=3;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x,y);ctx.bezierCurveTo(x,y-h*.5,x+lean*h,y-h*.8,x+lean*h*1.3,y-h);ctx.stroke();}
+
+// river centreline in uv
+const RIV=[];for(let i=0;i<=40;i++){const s=i/40;RIV.push({u:.30+.70*s, v:.08+.52*s+.07*Math.sin(s*6.2), w:.016+.03*s});}
+function riverPoly(k=1){const L=[],R=[];for(let i=0;i<RIV.length;i++){const a=RIV[Math.max(0,i-1)],b=RIV[Math.min(RIV.length-1,i+1)];let du=b.u-a.u,dv=b.v-a.v;const n=Math.hypot(du,dv)||1;const nu=-dv/n,nv=du/n;const p=RIV[i],w=p.w*k;L.push([p.u+nu*w,p.v+nv*w]);R.push([p.u-nu*w,p.v-nv*w]);}return L.concat(R.reverse());}
+const BEST={u:.33,v:.66};
+function riverDist(u,v){let m=9;for(const p of RIV){m=Math.min(m,Math.hypot(p.u-u,p.v-v)-p.w);}return m;}
+const N=7, CELLS=[];
+for(let i=0;i<N;i++)for(let j=0;j<N;j++){const u=(i+.5)/N,v=(j+.5)/N;if(riverDist(u,v)<.03)continue;const s=1-Math.hypot(u-BEST.u,v-BEST.v)*1.5+.35*(h01(i,j)-.5);CELLS.push({i,j,s});}
+const sorted=[...CELLS].map(c=>c.s).sort((a,b)=>a-b);const q=f=>sorted[Math.floor(f*(sorted.length-1))];
+const TH=[q(.25),q(.5),q(.72),q(.88)];const CLS=['#E9E4D8',COL.mist,COL.sage,COL.leaf,COL.forest];
+CELLS.forEach(c=>{c.k=TH.filter(t=>c.s>=t).length;});
+const BANK=[];for(let i=4;i<40;i+=3){const p=RIV[i];BANK.push({u:p.u-.05-.02*h01(i,1),v:p.v+.06,s:.6+.5*i/40,d:i/40});BANK.push({u:p.u+.06,v:p.v-.04-.02*h01(i,2),s:.6+.5*i/40,d:i/40+.03});}
+const GROVE=[[.08,.12],[.16,.06],[.06,.3],[.2,.2],[.12,.4],[.5,.05],[.62,.1]];
+const WBLOB=[];for(let i=0;i<48;i++){const a=i/48*Math.PI*2;const r=1+.13*Math.sin(3*a+1)+.08*Math.sin(5*a+2);WBLOB.push([BEST.u+Math.cos(a)*.12*r, BEST.v+Math.sin(a)*.09*r]);}
+
+function drop(x,y,s,a=1){ctx.save();ctx.globalAlpha*=a;ctx.translate(x,y);ctx.scale(s,s);
+  const g=ctx.createLinearGradient(-60,-120,60,80);g.addColorStop(0,'#8FB4C4');g.addColorStop(1,COL.water);
+  ctx.beginPath();ctx.moveTo(0,-130);ctx.bezierCurveTo(30,-70,78,-20,78,30);ctx.bezierCurveTo(78,78,42,108,0,108);ctx.bezierCurveTo(-42,108,-78,78,-78,30);ctx.bezierCurveTo(-78,-20,-30,-70,0,-130);ctx.closePath();
+  ctx.shadowColor='rgba(33,73,46,.25)';ctx.shadowBlur=40;ctx.shadowOffsetY=24;ctx.fillStyle=g;ctx.fill();ctx.shadowColor='transparent';
+  ctx.fillStyle='rgba(255,255,255,.55)';ctx.beginPath();ctx.ellipse(-30,10,12,30,-.3,0,7);ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.35)';ctx.beginPath();ctx.arc(-18,56,7,0,7);ctx.fill();ctx.restore();}
+
+function layerPattern(k){ // unit square
+  if(k===0){ctx.fillStyle='#E6ECE3';ctx.fillRect(0,0,1,1);ctx.strokeStyle=COL.sage;ctx.lineWidth=.008;for(let r=1;r<8;r++){ctx.beginPath();for(let i=0;i<=60;i++){const a=i/60*Math.PI*2,rad=.07*r*(1+.12*Math.sin(3*a+r));const x=.35+Math.cos(a)*rad,y=.42+Math.sin(a)*rad*.9;i?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.stroke();}}
+  if(k===1){ctx.fillStyle='#EEE6D6';ctx.fillRect(0,0,1,1);for(let i=0;i<16;i++){ctx.fillStyle=[COL.tan1,COL.tan2,COL.tan3][i%3];ctx.beginPath();ctx.arc(h01(i,1),h01(i,2),.06+.09*h01(i,3),0,7);ctx.fill();}}
+  if(k===2){ctx.fillStyle='#E8EEF0';ctx.fillRect(0,0,1,1);ctx.strokeStyle=COL.water;ctx.lineCap='round';ctx.lineWidth=.04;ctx.beginPath();RIV.forEach((p,i)=>i?ctx.lineTo(p.u,p.v):ctx.moveTo(p.u,p.v));ctx.stroke();ctx.lineWidth=.016;[[.55,.32,.85,.05],[.7,.45,.95,.3]].forEach(([a,b,c,d])=>{ctx.beginPath();ctx.moveTo(a,b);ctx.lineTo(c,d);ctx.stroke();});}
+  if(k===3){const cs=[COL.leaf,COL.sage,COL.goldS,COL.mist,'#F1E6C8'];for(let i=0;i<5;i++)for(let j=0;j<5;j++){ctx.fillStyle=cs[Math.floor(h01(i+3,j+7)*5)];ctx.fillRect(i/5,j/5,.202,.202);}}
+}
+
+function island(t, opt){
+  const {T, green, alpha}=opt;
+  ctx.save();ctx.globalAlpha*=alpha;
+  // shadow
+  ctx.save();ctx.fillStyle='rgba(33,73,46,.13)';ctx.beginPath();ctx.ellipse(CX,CY+HH+T+40,HW*.95,HH*.35,0,0,7);ctx.filter='blur(18px)';ctx.fill();ctx.restore();
+  // side faces with strata
+  const strata=[[0,.06,COL.leaf],[.06,.42,'#E9DFC9'],[.42,.46,COL.tan2],[.46,.86,COL.aq],[.86,1,COL.rock]];
+  const simple=[[0,.12,COL.leaf],[.12,1,'#DCCDAE']];
+  const cut=pr(T,90,240);
+  function face(A,B,dark){
+    const list=cut>0?strata:simple;
+    list.forEach(([a,b,c])=>{ctx.fillStyle=c;poly([[A[0],A[1]+a*T],[B[0],B[1]+a*T],[B[0],B[1]+b*T],[A[0],A[1]+b*T]]);ctx.fill();});
+    ctx.fillStyle=`rgba(0,0,0,${dark})`;poly([A,B,[B[0],B[1]+T],[A[0],A[1]+T]]);ctx.fill();
+  }
+  face(P(0,1),P(1,1),.0);face(P(1,1),P(1,0),.07);
+  // top face
+  ctx.save();isoT();ctx.beginPath();ctx.rect(0,0,1,1);ctx.clip();
+  ctx.fillStyle=mix('#9DB89A',COL.leaf,green);ctx.fillRect(0,0,1,1);
+  // fields texture
+  ctx.globalAlpha=.25;for(let i=0;i<6;i++){ctx.fillStyle=i%2?'#ffffff':COL.forest;ctx.fillRect(.62+i*.06,.62,.03,.36);}ctx.globalAlpha=1;
+  // river
+  ctx.fillStyle=COL.water;poly(riverPoly(1+opt.flood*1.2));ctx.fill();
+  ctx.restore();
+  // top edge highlight
+  ctx.strokeStyle='rgba(255,255,255,.55)';ctx.lineWidth=2;poly([P(0,0),P(1,0),P(1,1),P(0,1)]);ctx.stroke();
+  ctx.restore();
+}
+
+function hydro(x,without){return without? .12+.78*Math.exp(-Math.pow((x-.42)/.085,2)) : .2+.42*Math.exp(-Math.pow((x-.5)/.14,2))+.05*x;}
+
+let shown=0,target=0,tNow=0;
+function draw(p,time){
+  const t=p*6;
+  ctx.setTransform(SC,0,0,SC,0,0);ctx.clearRect(0,0,1000,1000);
+  // backdrop disc
+  const bd=lerp(380,430,eio(pr(t,0,1)));
+  ctx.fillStyle=COL.sageT;ctx.beginPath();ctx.arc(500,520,bd,0,7);ctx.fill();
+  ctx.strokeStyle=COL.line;ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(500,520,bd+28,0,7);ctx.stroke();
+
+  const bob=reduce?0:Math.sin(time*1.2)*8;
+  // loop chapter scale
+  const zs=lerp(1,.8,eio(pr(t,5.0,5.45)));
+  ctx.save();ctx.translate(500,560);ctx.scale(zs,zs);ctx.translate(-500,-560);
+  ctx.translate(0,bob*pr(t,.9,1.2));
+
+  const T=lerp(70,250,eio(pr(t,3.0,3.45)))-lerp(0,180,eio(pr(t,4.05,4.4)));
+  const green=eio(pr(t,4.2,4.85));
+  const flood=0;
+  const ia=eo(pr(t,.62,1.0));
+  if(ia>0){
+    ctx.save();ctx.translate(0,(1-ia)*120);PILLQ=[];
+    island(t,{T,green,alpha:ia,flood});
+
+    // ---- chapter 1: layers + grid
+    const gridA=eo(pr(t,1.78,1.95))*(1-eo(pr(t,2.25,2.5)));
+    if(gridA>0){ctx.save();isoT();ctx.beginPath();ctx.rect(0,0,1,1);ctx.clip();
+      CELLS.forEach(c=>{const d=(c.i+c.j)/(2*N);const k=eo(cl((pr(t,1.78,2.1)-d*.6)/.4));if(k<=0)return;const pad=.006+(1-k)*.05;ctx.globalAlpha=gridA*(c.k?.92:.7);ctx.fillStyle=CLS[c.k];ctx.fillRect(c.i/N+pad,c.j/N+pad,1/N-2*pad,1/N-2*pad);});
+      ctx.restore();}
+    const names=['Terrain','Soil','Water','Land use'];
+    for(let k=0;k<4;k++){
+      const up=eo(pr(t,1.05+k*.1,1.35+k*.1)), down=eio(pr(t,1.6,1.85));
+      const a=up*(1-pr(t,1.8,1.86));
+      if(a<=0)continue;
+      const h=lerp(0,90+k*70,up)*(1-down);
+      ctx.save();ctx.globalAlpha*=a;
+      ctx.save();isoT(h);ctx.beginPath();ctx.rect(0,0,1,1);ctx.clip();ctx.globalAlpha*=.93;layerPattern(k);ctx.restore();
+      ctx.strokeStyle='#fff';ctx.lineWidth=2;poly([P(0,0,h),P(1,0,h),P(1,1,h),P(0,1,h)]);ctx.stroke();
+      const [lx,ly]=P(0,1,h);ctx.strokeStyle=COL.gold;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(lx-10,ly);ctx.lineTo(lx-40,ly);ctx.stroke();
+      txt(names[k],lx-50,ly+8,24,COL.forest,{w:700,align:'right',a:eo(pr(t,1.2+k*.1,1.4+k*.1))*(1-down)});
+      ctx.restore();
+    }
+    // best-site ring
+    const rin=eback(pr(t,1.95,2.25)), rout=eo(pr(t,2.55,2.8));
+    if(rin>0&&rout<1){const [bx,by]=P(BEST.u,BEST.v);const pulse=1+(reduce?0:.05*Math.sin(time*4));ctx.save();ctx.globalAlpha*=(1-rout);ctx.translate(bx,by);ctx.scale(1,.55);
+      ctx.strokeStyle=COL.goldS;ctx.lineWidth=16;ctx.globalAlpha*=.6;ctx.beginPath();ctx.arc(0,0,105*rin*pulse,0,7);ctx.stroke();ctx.globalAlpha/=.6;
+      ctx.strokeStyle=COL.gold;ctx.lineWidth=5;ctx.beginPath();ctx.arc(0,0,105*rin*pulse,0,7);ctx.stroke();ctx.restore();
+      pill('Best site',bx,by-92,eo(pr(t,2.05,2.25))*(1-rout),COL.gold,'#fff');}
+
+    // ---- chapter 2: wetland + trees
+    const wf=eio(pr(t,2.25,2.75));
+    if(wf>0){ctx.save();isoT();
+      ctx.fillStyle=COL.sage;ctx.globalAlpha=.9*wf;ctx.beginPath();WBLOB.forEach(([u,v],i)=>{const x=BEST.u+(u-BEST.u)*1.25,y=BEST.v+(v-BEST.v)*1.25;i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.closePath();ctx.fill();
+      ctx.globalAlpha=1;ctx.beginPath();WBLOB.forEach(([u,v],i)=>{const x=BEST.u+(u-BEST.u)*wf,y=BEST.v+(v-BEST.v)*wf;i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.closePath();ctx.fillStyle=COL.water;ctx.fill();
+      ctx.restore();
+      const ra=pr(t,2.5,2.85);
+      for(let i=0;i<12;i++){const a=Math.PI*(.9+i*.11);const [x,y]=P(BEST.u+Math.cos(a)*.14,BEST.v+Math.sin(a)*.105);reed(x,y,(26+10*(i%3))*eo(cl(ra*1.6-i*.05)),.15*Math.cos(i));}
+      pill('New wetland',P(BEST.u,BEST.v)[0],P(BEST.u,BEST.v)[1]-95,eo(pr(t,2.6,2.75))*(1-eo(pr(t,2.95,3.05))));
+    }
+    // trees: grove always (grow with green), bank trees in design
+    const items=[];
+    GROVE.forEach(([u,v],i)=>items.push({u,v,s:(.75+.25*h01(i,4))*eo(pr(t,.85+i*.02,1.05+i*.02))*(1+.35*green),c:i%2?COL.forest:COL.leaf}));
+    BANK.forEach((b,i)=>items.push({u:b.u,v:b.v,s:b.s*.85*eback(pr(t,2.6+b.d*.3,2.85+b.d*.3))*(1+.25*green),c:COL.forest}));
+    items.sort((a,b)=>(a.u+a.v)-(b.u+b.v)).forEach(it=>{const [x,y]=P(it.u,it.v);tree(x,y,it.s*1.15,it.c);});
+
+    // ---- chapter 3: cross-section particles + hydrograph
+    const pa=eo(pr(t,3.3,3.5))*(1-eo(pr(t,3.95,4.1)));
+    if(pa>0&&T>150){
+      const A=P(0,1),B=P(1,1),C2=P(1,0);
+      ctx.save();ctx.globalAlpha*=pa;
+      for(let i=0;i<14;i++){const ph=((reduce?0:time*.25)+h01(i,9))%1;const f=.25+.3*h01(i,8);const x=lerp(A[0],B[0],f),y=lerp(A[1],B[1],f);const yy=y+T*(.08+ph*.42);ctx.fillStyle=COL.water;ctx.globalAlpha=pa*Math.min(1,(1-ph)*3);ctx.beginPath();ctx.arc(x,yy,4.5,0,7);ctx.fill();}
+      ctx.globalAlpha=pa;
+      for(let r=0;r<3;r++)for(let i=0;i<7;i++){const ph=((reduce?0:time*.12)+i/7+r*.11)%1;let x,y;if(ph<.6){const f=ph/.6;x=lerp(A[0],B[0],.2+.8*f);y=lerp(A[1],B[1],.2+.8*f)+T*(.55+r*.09);}else{const f=(ph-.6)/.4;x=lerp(B[0],C2[0],f*.55);y=lerp(B[1],C2[1],f*.55)+T*(.55+r*.09)-f*T*.3;}ctx.fillStyle='#3E6E80';ctx.beginPath();ctx.arc(x,y,4,0,7);ctx.fill();}
+      ctx.restore();
+      const la=eo(pr(t,3.4,3.6))*(1-eo(pr(t,3.9,4.05)));
+      const A2=P(0,1);txt('SURFACE & SOIL',A2[0]+16,A2[1]+T*.3,14,COL.soft,{fam:'JetBrains Mono',a:la,ls:2});
+      txt('GROUNDWATER',A2[0]+16,A2[1]+T*.72,14,'#3E6E80',{fam:'JetBrains Mono',a:la,ls:2});
+    }
+    {const q=PILLQ;PILLQ=null;q.forEach(a=>pill(...a));}
+    ctx.restore();
+  }
+  ctx.restore(); // zoom
+
+  // hydrograph card (screen space)
+  const ha=eo(pr(t,3.35,3.55))*(1-eo(pr(t,3.95,4.1)));
+  if(ha>0){ctx.save();ctx.globalAlpha=ha;const x0=560,y0=70+(1-ha)*20,w=400,h=230;rr(x0,y0,w,h,22);ctx.fillStyle=COL.card;ctx.shadowColor='rgba(33,73,46,.18)';ctx.shadowBlur=30;ctx.shadowOffsetY=10;ctx.fill();ctx.shadowColor='transparent';
+    txt('RIVER FLOW IN A STORM',x0+26,y0+40,14,COL.gold,{fam:'JetBrains Mono',ls:2});
+    const ax0=x0+26,ax1=x0+w-26,ay0=y0+h-30,ay1=y0+64;ctx.strokeStyle=COL.line;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(ax0,ay0);ctx.lineTo(ax1,ay0);ctx.stroke();
+    const pc=eio(pr(t,3.45,3.85));
+    [[true,COL.rust,4],[false,COL.forest,5]].forEach(([wo,c,lw])=>{ctx.strokeStyle=c;ctx.lineWidth=lw;ctx.lineCap='round';ctx.beginPath();const n=Math.floor(80*pc);for(let i=0;i<=n;i++){const xx=lerp(ax0,ax1,i/80),yy=ay0-(ay0-ay1)*hydro(i/80,wo);i?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy);}ctx.stroke();});
+    txt('without',ax0+150,ay1+8,16,COL.rust,{w:700,a:pr(t,3.7,3.8)});txt('with NbS',ax1-4,ay0-62,16,COL.forest,{w:700,align:'right',a:pr(t,3.75,3.85)});
+    ctx.restore();}
+
+  // ---- chapter 4: satellite, sensor, sparkline
+  const sp=pr(t,4.05,4.95);
+  if(sp>0&&sp<1){const sa=eo(pr(t,4.05,4.2))*(1-eo(pr(t,4.8,4.95)));const sx=lerp(120,880,eio(sp)),sy=150-60*Math.sin(sp*Math.PI);
+    ctx.save();ctx.globalAlpha=sa*.22;ctx.fillStyle=COL.goldS;ctx.beginPath();ctx.moveTo(sx,sy+20);ctx.lineTo(sx-120,560);ctx.lineTo(sx+120,560);ctx.closePath();ctx.fill();ctx.restore();
+    ctx.save();ctx.globalAlpha=sa;ctx.translate(sx,sy);ctx.rotate(.2);ctx.fillStyle=COL.mist;rr(-66,-12,42,24,3);ctx.fill();rr(24,-12,42,24,3);ctx.fill();ctx.fillStyle=COL.forest;rr(-18,-18,36,36,7);ctx.fill();ctx.fillStyle=COL.gold;ctx.beginPath();ctx.arc(0,22,6,0,7);ctx.fill();ctx.restore();}
+  const sen=eback(pr(t,4.3,4.5))*(1-eo(pr(t,4.95,5.1)));
+  if(sen>0){const [x,y]=P(BEST.u+.17,BEST.v-.02);const yy=y+(bob*pr(t,.9,1.2));ctx.fillStyle='#5A3D28';ctx.fillRect(x-3,yy-70*sen,6,70*sen);ctx.fillStyle=COL.forest;rr(x-16,yy-92*sen,32,26*sen,5);ctx.fill();
+    if(!reduce)for(let j=0;j<3;j++){const ph=(time*.9-j*.33)%1;const phh=ph<0?ph+1:ph;ctx.strokeStyle=COL.gold;ctx.globalAlpha=(1-phh)*.9*sen;ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,yy-80,18+phh*46,-Math.PI*.85,-Math.PI*.15);ctx.stroke();ctx.globalAlpha=1;}}
+  const va=eo(pr(t,4.4,4.6))*(1-eo(pr(t,4.95,5.1)));
+  if(va>0){ctx.save();ctx.globalAlpha=va;const x0=40,y0=80+(1-va)*20,w=360,h=180;rr(x0,y0,w,h,22);ctx.fillStyle=COL.card;ctx.shadowColor='rgba(33,73,46,.18)';ctx.shadowBlur=30;ctx.shadowOffsetY=10;ctx.fill();ctx.shadowColor='transparent';
+    txt('VEGETATION, YEAR BY YEAR',x0+24,y0+38,14,COL.gold,{fam:'JetBrains Mono',ls:2});
+    const pv=eio(pr(t,4.45,4.9));ctx.strokeStyle=COL.forest;ctx.lineWidth=4;ctx.lineCap='round';ctx.beginPath();const n=Math.floor(28*pv);for(let i=0;i<=n;i++){const u=i/28;const b=u<.35?.2+.04*Math.sin(i*1.7):.2+.6*eo((u-.35)/.65)+.03*Math.sin(i*1.9);const xx=lerp(x0+24,x0+w-24,u),yy=y0+h-28-b*(h-80);i?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy);}ctx.stroke();
+    const bx=lerp(x0+24,x0+w-24,.35);ctx.setLineDash([5,5]);ctx.strokeStyle=COL.gold;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(bx,y0+56);ctx.lineTo(bx,y0+h-24);ctx.stroke();ctx.setLineDash([]);
+    txt('NbS built',bx+8,y0+66,14,COL.gold,{w:700});ctx.restore();}
+
+  // ---- chapter 5: loop
+  const lp=eio(pr(t,5.1,5.6));
+  if(lp>0){ctx.save();ctx.translate(500,560);ctx.scale(1,.6);ctx.strokeStyle=COL.gold;ctx.lineWidth=3/0.8;ctx.setLineDash([14,10]);ctx.beginPath();ctx.arc(0,0,440,-Math.PI/2,-Math.PI/2+lp*Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+    const labels=['Site selection','Design','Modelling','Monitoring'];
+    labels.forEach((l,i)=>{const a=-Math.PI/2+i*Math.PI/2;const k=eback(pr(t,5.2+i*.08,5.4+i*.08));if(k<=0)return;const x=500+Math.cos(a)*440,y=560+Math.sin(a)*264;ctx.fillStyle=COL.forest;ctx.beginPath();ctx.arc(x,y,13*k,0,7);ctx.fill();ctx.fillStyle=COL.gold;ctx.beginPath();ctx.arc(x,y,5*k,0,7);ctx.fill();
+      const dy=[-30,46,48,46][i];const al=['center','right','center','left'][i];
+      txt(`0${i+1}  ${l}`,x,y+dy,22,COL.forest,{w:700,align:al,a:Math.min(k,1)});});
+    if(lp>=1){const a=-Math.PI/2+((reduce?0:time*.35)%(Math.PI*2));drop(500+Math.cos(a)*440,560+Math.sin(a)*264-14,.16);}
+  }
+
+  // ---- chapter 0: the drop
+  const fall=eio(pr(t,.42,.82));
+  const da=1-pr(t,.8,.86);
+  if(da>0){const y=lerp(330+bob,560,fall);drop(500,y,lerp(1,.25,fall),da);}
+  const sp2=pr(t,.8,1.15);
+  if(sp2>0&&sp2<1){ctx.save();ctx.translate(500,560);ctx.scale(1,.5);ctx.strokeStyle=COL.water;ctx.globalAlpha=(1-sp2)*.8;ctx.lineWidth=4;ctx.beginPath();ctx.arc(0,0,40+sp2*300,0,7);ctx.stroke();ctx.restore();}
+}
+
+// ---- scroll binding
+const story=document.getElementById('story');
+const chaps=[...document.querySelectorAll('.chap')];
+const dots=document.getElementById('dots');
+chaps.forEach((c,i)=>{const b=document.createElement('button');b.setAttribute('aria-label','Go to chapter '+i);b.onclick=()=>{const r=story.offsetTop+(story.offsetHeight-innerHeight)*((i+.55)/6);scrollTo({top:r,behavior:reduce?'auto':'smooth'});};dots.appendChild(b);});
+const db=[...dots.children];
+const cnum=document.getElementById('cnum'),cbar=document.getElementById('cbar'),hint=document.getElementById('hint');
+let cur=-1;
+function readScroll(){if(story.offsetParent===null)return;const h=story.offsetHeight-innerHeight;target=cl((scrollY-story.offsetTop)/h);}
+addEventListener('scroll',readScroll,{passive:true});readScroll();
+function frame(ms){if(story.offsetParent===null){requestAnimationFrame(frame);return;}tNow=ms/1000;shown=reduce?target:shown+(target-shown)*.085;if(Math.abs(target-shown)<1e-4)shown=target;
+  draw(shown,tNow);
+  const i=Math.min(5,Math.floor(shown*6+.02));if(i!==cur){cur=i;chaps.forEach((c,k)=>c.classList.toggle('on',k===i));db.forEach((d,k)=>d.classList.toggle('on',k===i));cnum.textContent=String(i).padStart(2,'0')+' / 05';}
+  cbar.style.width=(shown*100)+'%';hint.style.opacity=shown>.03?0:1;
+  requestAnimationFrame(frame);}
+document.fonts&&document.fonts.ready.then(()=>{});
+requestAnimationFrame(frame);
+})();
+
+/* =====================================================================
+   HEADER, DEPTH TOGGLE, REVEALS
+   ===================================================================== */
+const hdr=document.getElementById('top');
+const bg=document.getElementById('burger'),nm=document.querySelector('nav.main');bg.onclick=()=>{const o=nm.classList.toggle('open');bg.setAttribute('aria-expanded',o);hdr.classList.add('scrolled');};nm.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{nm.classList.remove('open');bg.setAttribute('aria-expanded','false');}));
+addEventListener('scroll',()=>hdr.classList.toggle('scrolled',scrollY>20),{passive:true});
+document.querySelectorAll('.depth button').forEach(b=>b.onclick=()=>{document.body.dataset.depth=b.dataset.d;document.querySelectorAll('.depth button').forEach(x=>x.setAttribute('aria-pressed',x===b));try{localStorage.setItem('nbsc-depth',b.dataset.d)}catch(e){}});
+try{const d=localStorage.getItem('nbsc-depth');if(d){document.querySelector(`.depth button[data-d="${d}"]`).click();}}catch(e){}
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.12});
+function watch(){document.querySelectorAll('.reveal:not(.in)').forEach(el=>io.observe(el));}
+
+/* =====================================================================
+   DATA
+   ===================================================================== */
+const ICON={
+ wetland:'<svg viewBox="0 0 44 44"><ellipse cx="22" cy="28" rx="15" ry="6" fill="#5B8A9E"/><path d="M12 28c0-8 1-12 2-15M18 27c0-9 0-13 1-16M28 27c0-8 1-12 3-14" stroke="#21492E" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>',
+ buffer:'<svg viewBox="0 0 44 44"><path d="M20 4c5 8-6 14 0 22s-4 12 0 16" stroke="#5B8A9E" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="9" cy="16" r="5" fill="#21492E"/><circle cx="33" cy="26" r="5" fill="#21492E"/><circle cx="10" cy="32" r="4" fill="#3D7350"/></svg>',
+ forest:'<svg viewBox="0 0 44 44"><circle cx="14" cy="18" r="8" fill="#3D7350"/><circle cx="29" cy="15" r="9" fill="#21492E"/><rect x="13" y="24" width="3" height="12" fill="#5A3D28"/><rect x="28" y="22" width="3" height="14" fill="#5A3D28"/></svg>',
+ flood:'<svg viewBox="0 0 44 44"><path d="M2 14 10 30h24l8-16" stroke="#3D7350" stroke-width="3" fill="none"/><path d="M10 27h24" stroke="#5B8A9E" stroke-width="5"/></svg>',
+ mar:'<svg viewBox="0 0 44 44"><rect x="2" y="12" width="40" height="3" fill="#3D7350"/><rect x="2" y="28" width="40" height="12" fill="#C9D7DC"/><circle cx="16" cy="20" r="2" fill="#5B8A9E"/><circle cx="24" cy="23" r="2" fill="#5B8A9E"/><circle cx="20" cy="17" r="2" fill="#5B8A9E"/></svg>',
+ pond:'<svg viewBox="0 0 44 44"><circle cx="22" cy="23" r="15" fill="#8AA98F"/><circle cx="22" cy="23" r="10" fill="#5B8A9E"/></svg>',
+ cwet:'<svg viewBox="0 0 44 44"><path d="M2 22h40" stroke="#5B8A9E" stroke-width="6"/><rect x="14" y="14" width="16" height="16" rx="4" fill="#8AA98F"/><path d="M18 22v-6M22 22v-8M26 22v-6" stroke="#21492E" stroke-width="2"/></svg>',
+ farm:'<svg viewBox="0 0 44 44"><path d="M4 34h36M4 28h36M4 22h36" stroke="#B79B6B" stroke-width="3"/><circle cx="10" cy="14" r="5" fill="#21492E"/><circle cx="20" cy="14" r="5" fill="#3D7350"/><circle cx="30" cy="14" r="5" fill="#21492E"/></svg>'
+};
+const SOL=CONTENT.solutions;
+const TOOLS=CONTENT.tools;
+const PERS={
+ 'Municipality':{h:'Flood-safe, greener neighbourhoods, with evidence for council.',a:['Map where wetlands, trees or floodplains help most','Design measures that fit public space','Show councillors the with/without picture'],t:['Suitability Explorer','Catchment model','CRIDA-NbS Studio'],f:'A 20-minute call, then a suitability scan of your territory.'},
+ 'Water agency':{h:'Catchment-scale answers for floods, droughts and groundwater.',a:['Coupled surface and groundwater scenarios','Climate stress tests of measure portfolios','Monitoring that feeds back into models'],t:['Coupled SWAT+ / MODFLOW','Groundwater Model','nbsmonitor'],f:'A scoping session on one priority catchment.'},
+ 'Farmer or landowner':{h:'Keep water and soil on your land, and get paid for it where schemes allow.',a:['Which fields suit ponds, buffers or hedgerows','Simple designs you can build','Proof of results for subsidy schemes'],t:['Suitability Explorer','nbsmonitor'],f:'A site visit or a remote scan of your parcels.'},
+ 'Funder':{h:'Projects that deliver measurable, verifiable impact.',a:['Pre-investment screening of sites','Model-based estimates of benefits','Satellite monitoring for reporting'],t:['Suitability Explorer','Catchment model','nbsmonitor'],f:'A portfolio screening of candidate projects.'},
+ 'Researcher or student':{h:'Tools and case studies to learn and build on.',a:['Hands-on practicals with real data','Model setups for theses and papers','Co-creation projects on real fields'],t:['Suitability Explorer','Sponge Valley','Coupled SWAT+ / MODFLOW'],f:'Ask about practicals and collaborations.'}
+};
+const FIND={ch:['Floods','Drought','Water quality','Heat','Biodiversity'],ls:['City','Farmland','River valley','Hills & slopes'],sc:['One site','A whole catchment']};
+const REC={
+ Floods:{City:['wetland','pond','buffer'],Farmland:['pond','farm','wetland'],'River valley':['flood','wetland','buffer'],'Hills & slopes':['forest','farm','pond']},
+ Drought:{City:['mar','wetland','forest'],Farmland:['mar','pond','farm'],'River valley':['mar','flood','wetland'],'Hills & slopes':['forest','mar','farm']},
+ 'Water quality':{City:['cwet','wetland','buffer'],Farmland:['buffer','cwet','farm'],'River valley':['buffer','wetland','cwet'],'Hills & slopes':['buffer','forest','farm']},
+ Heat:{City:['forest','wetland','pond'],Farmland:['forest','buffer','farm'],'River valley':['buffer','forest','flood'],'Hills & slopes':['forest','buffer','farm']},
+ Biodiversity:{City:['wetland','pond','forest'],Farmland:['buffer','farm','pond'],'River valley':['flood','wetland','buffer'],'Hills & slopes':['forest','buffer','wetland']}
+};
+const STEPS=[
+ {n:'Site selection',d:'Find where each solution helps most.',g:['Suitability maps per solution','Ranked shortlist of sites','A short decision note']},
+ {n:'Design',d:'Shape the measure to the place.',g:['Layout, size and depth','Planting plan','Cost range']},
+ {n:'Modelling',d:'Prove it before you build.',g:['With / without scenarios','Climate stress test','Benefits in plain numbers']},
+ {n:'Monitoring',d:'Track it, learn, repeat.',g:['Satellite time series','Drone and sensor plan','Yearly performance report']}
+];
+const PROJ=[
+ {n:'Melle co-creation field',p:'ILVO, Melle · Gondebeek valley',d:'Students use the Suitability Explorer to co-design Nature-based Solutions for an experimental field.',ph:false},
+ {n:'Flemish catchments',p:'Flanders, Belgium',d:'Add a short summary: the question, what we did, what changed.',ph:true},
+ {n:'Ethiopian highlands & rift valley',p:'Bahir Dar · Arba Minch',d:'Add a short summary: partners, measures and first results.',ph:true}
+];
+
+/* =====================================================================
+   RENDER SECTIONS
+   ===================================================================== */
+// persona
+const pr_=document.getElementById('personaRow'),pp=document.getElementById('personaPanel');
+function showPersona(k){[...pr_.children].forEach(b=>b.setAttribute('aria-pressed',b.textContent===k));const p=PERS[k];
+ pp.innerHTML=`<div><div class="mono">For a ${k.toLowerCase()}</div><h3>${p.h}</h3><a class="btn primary small" href="#contact">${p.f.startsWith('Ask')?'Get in touch':'Start with this'} <span class="arr">→</span></a><p style="margin-top:14px;font-size:15px;color:var(--soft)">${p.f}</p></div>
+ <div><div class="mono">What we do for you</div><ul>${p.a.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+ <div><div class="mono">Tools you'll use</div><ul>${p.t.map(x=>{const tt=TOOLS.find(t=>t.n.startsWith(x.replace(' model','')))||TOOLS.find(t=>t.n.includes(x));return `<li><a href="${tt?'#tool-'+tt.id:'#tools'}">${x}</a></li>`}).join('')}</ul></div>`;}
+Object.keys(PERS).forEach(k=>{const b=document.createElement('button');b.className='chip';b.textContent=k;b.onclick=()=>showPersona(k);pr_.appendChild(b);});
+showPersona('Municipality');
+
+// finder
+const sel={};const res=document.getElementById('result');
+document.querySelectorAll('.opts').forEach(o=>{const k=o.dataset.q;FIND[k].forEach(v=>{const b=document.createElement('button');b.className='chip';b.textContent=v;b.setAttribute('aria-pressed','false');b.onclick=()=>{sel[k]=v;[...o.children].forEach(x=>x.setAttribute('aria-pressed',x===b));renderRes();};o.appendChild(b);});});
+function renderRes(){
+ if(!sel.ch||!sel.ls){res.innerHTML=`<div class="mono">Your starting point</div><h3>Pick a challenge and a landscape.</h3><p class="empty">We'll suggest three solutions, the tool that tests them, and where to begin.</p>`;return;}
+ const ids=REC[sel.ch][sel.ls];const big=sel.sc==='A whole catchment';
+ const tool=big?(sel.ch==='Drought'?'Coupled SWAT+ / MODFLOW':'Catchment geohydrological model'):'NbS Suitability Explorer';
+ res.innerHTML=`<div class="mono">${sel.ch} · ${sel.ls}${sel.sc?' · '+sel.sc:''}</div><h3>Look first at these three.</h3>
+ ${ids.map(id=>{const s=SOL.find(x=>x.id===id);return `<div class="rec"><div class="ic">${ICON[id]}</div><div><b>${s.n}</b><span>${s.t}. ${s.d.split('.')[0]}.</span></div></div>`}).join('')}
+ <div class="next"><b>Tool that tests it:</b> ${tool}<br><b>First step:</b> ${big?'a catchment scoping session and a with/without model run.':'a suitability scan of your site and a short design note.'}</div>
+ <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap"><a class="btn primary small" href="#contact">Discuss this <span class="arr">→</span></a><a class="btn ghost small" href="#solution-${ids[0]}">Learn about ${SOL.find(x=>x.id===ids[0]).n.toLowerCase()}</a></div>`;}
+renderRes();
+
+// solutions
+const sg=document.getElementById('solGrid');
+function solArt(id){return `<svg viewBox="0 0 240 120" aria-hidden="true"><rect width="240" height="120" fill="#EAF0EA"/><path d="M0 70 Q60 55 120 66 T240 60 V120 H0Z" fill="#8AA98F"/><path d="M0 88 Q70 80 140 90 T240 86 V120 H0Z" fill="#3D7350"/><g transform="translate(98 26) scale(1.0)">${ICON[id].replace('<svg viewBox="0 0 44 44">','<g>').replace('</svg>','</g>')}</g></svg>`;}
+SOL.forEach((s,i)=>{const b=document.createElement('button');b.className='sol reveal';b.id='sol-'+s.id;b.setAttribute('aria-expanded','false');b.innerHTML=`${solArt(s.id)}<h3>${s.n}</h3><p>${s.t}</p>`;b.onclick=()=>openSol(s.id,true);sg.appendChild(b);});
+const det=document.createElement('div');det.className='card sol-detail';det.id='solDetail';sg.appendChild(det);
+window.openSol=function(id,toggle){const s=SOL.find(x=>x.id===id);const btn=document.getElementById('sol-'+id);const was=btn.getAttribute('aria-expanded')==='true';
+ document.querySelectorAll('.sol').forEach(x=>x.setAttribute('aria-expanded','false'));
+ if(toggle&&was){det.classList.remove('open');return;}
+ btn.setAttribute('aria-expanded','true');
+ const cols=Math.round(sg.clientWidth/btn.clientWidth)||1;const idx=SOL.indexOf(s);const rowEnd=Math.min(SOL.length-1,Math.floor(idx/cols)*cols+cols-1);
+ sg.insertBefore(det,sg.children[rowEnd+1]||null);
+ det.innerHTML=`<div><div class="mono">${s.t}</div><h3>${s.n}</h3><p style="color:var(--soft)">${s.d}</p><a class="btn primary small" href="#solution-${s.id}">Open the full page${s.video?" and video":""} <span class="arr">→</span></a></div>
+ <div><h4>Environmental</h4><ul>${s.env.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+ <div><h4>Economic</h4><ul>${s.eco.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+ <div><h4>Social</h4><ul>${s.soc.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
+ det.classList.add('open');};
+
+// tools
+const tg=document.getElementById('toolGrid');
+function preview(k){
+ if(k==='grid'){let s='';for(let i=0;i<14;i++)for(let j=0;j<5;j++){const v=1-Math.hypot(i/14-.3,j/5-.6)+.3*((Math.sin(i*7+j*3)+1)/2-.5);const c=v>.75?'#21492E':v>.6?'#3D7350':v>.45?'#8AA98F':v>.3?'#C3D2C4':'#E9E4D8';s+=`<rect x="${i*22+6}" y="${j*20+6}" width="19" height="17" rx="3" fill="${c}" style="animation:pop .6s ${(i+j)*.05}s both"/>`;}return `<svg viewBox="0 0 320 110" width="100%" height="100%">${s}<ellipse cx="100" cy="78" rx="40" ry="22" fill="none" stroke="#B88A4E" stroke-width="3" class="pulse"/></svg>`;}
+ if(k==='flow')return `<svg viewBox="0 0 320 110" width="100%" height="100%"><path d="M10 95 H310" stroke="#E4E0D5" stroke-width="2"/><path class="draw" d="M10 88 C80 88 100 20 130 20 S170 88 310 88" stroke="#B0472F" stroke-width="3" fill="none"/><path class="draw d2" d="M10 82 C90 82 120 50 160 50 S220 78 310 76" stroke="#21492E" stroke-width="4" fill="none"/></svg>`;
+ if(k==='gw')return `<svg viewBox="0 0 320 110" width="100%" height="100%"><rect y="0" width="320" height="30" fill="#EAF0EA"/><rect y="30" width="320" height="34" fill="#E9DFC9"/><rect y="64" width="320" height="46" fill="#C9D7DC"/><path d="M0 64 Q160 50 320 66" stroke="#3E6E80" stroke-width="2" stroke-dasharray="6 5" fill="none" class="wave"/>${[40,90,140,190,240].map((x,i)=>`<circle cx="${x}" cy="40" r="3.5" fill="#5B8A9E" class="fall" style="animation-delay:${i*.3}s"/>`).join('')}</svg>`;
+ if(k==='sat')return `<svg viewBox="0 0 320 110" width="100%" height="100%"><path d="M20 90 L60 80 L100 84 L140 78 L180 60 L220 44 L260 36 L300 30" stroke="#21492E" stroke-width="4" fill="none" class="draw"/><g class="orbit"><rect x="-14" y="-6" width="10" height="12" fill="#C3D2C4"/><rect x="4" y="-6" width="10" height="12" fill="#C3D2C4"/><rect x="-5" y="-6" width="10" height="12" rx="2" fill="#21492E"/></g></svg>`;
+ if(k==='studio'){let s='';const L=['#E8E1CF','#21492E','#7FA7B8','#8AA98F','#5B8A9E'];for(let i=0;i<12;i++)for(let j=0;j<4;j++){const v=Math.floor((Math.sin(i*3.1+j*5.7)+1)*2.4)%5;s+=`<rect x="${i*26+6}" y="${j*25+6}" width="22" height="21" rx="4" fill="${j===2?'#5B8A9E':L[v===4?0:v]}" style="animation:pop .5s ${(i*4+j)*.03}s both"/>`;}return `<svg viewBox="0 0 320 110" width="100%" height="100%">${s}</svg>`;}
+ if(k==='q')return `<svg viewBox="0 0 320 110" width="100%" height="100%"><path d="M0 60 Q80 40 160 60 T320 60 V110 H0Z" fill="#5B8A9E" opacity=".35"/>${[50,110,170,230,280].map((x,i)=>`<circle cx="${x}" cy="${70+(i%2)*14}" r="5" fill="#B0472F" class="fade" style="animation-delay:${i*.4}s"/>`).join('')}</svg>`;
+ if(k==='game')return `<svg viewBox="0 0 320 110" width="100%" height="100%"><path d="M0 80 Q80 50 160 70 T320 60 V110 H0Z" fill="#8AA98F"/><circle cx="90" cy="62" r="12" fill="#21492E" class="bounce"/><circle cx="210" cy="58" r="14" fill="#3D7350" class="bounce" style="animation-delay:.3s"/><ellipse cx="150" cy="86" rx="34" ry="9" fill="#5B8A9E"/></svg>`;
+}
+TOOLS.forEach(t=>{const a=document.createElement('a');a.className='card tool reveal'+(t.feat?' feature':'');a.href='#tool-'+t.id;a.style.textDecoration='none';a.innerHTML=`<span class="badge ${t.c}">${t.s}</span><div class="pv">${preview(t.pv)}</div><div class="mono" style="font-size:11px">${t.q}</div><h3>${t.n}</h3><p>${t.d}</p><div class="who">${t.w}</div>`;tg.appendChild(a);});
+const st=document.createElement('style');st.textContent=`@keyframes pop{from{opacity:0;transform:scale(.6)}}.tool .pv rect{transform-box:fill-box;transform-origin:center}.draw{stroke-dasharray:600;stroke-dashoffset:600;animation:dr 3s ease forwards infinite}.d2{animation-delay:.6s}@keyframes dr{60%,100%{stroke-dashoffset:0}}.pulse{animation:pu 2s infinite;transform-box:fill-box;transform-origin:center}@keyframes pu{50%{transform:scale(1.12);opacity:.6}}.fall{animation:fa 2s infinite}@keyframes fa{from{transform:translateY(0);opacity:1}to{transform:translateY(34px);opacity:0}}.orbit{animation:or 5s linear infinite}@keyframes or{from{transform:translate(-20px,30px)}to{transform:translate(340px,10px)}}.fade{animation:fd 2.4s infinite}@keyframes fd{50%{opacity:.15}}.bounce{animation:bo 1.6s infinite}@keyframes bo{50%{transform:translateY(-6px)}}.wave{animation:wv 3s ease-in-out infinite alternate}@keyframes wv{to{transform:translateY(-8px)}}@media (prefers-reduced-motion: reduce){.tool .pv *{animation:none!important;stroke-dashoffset:0!important}}`;document.head.appendChild(st);
+
+// compare
+const cov=document.getElementById('cov');
+function cmp(){const k=cov.value/100;document.getElementById('covv').textContent=cov.value+'%';
+ const land=document.getElementById('cmpLand');let trees='';const nT=Math.round(k*14);for(let i=0;i<nT;i++){const x=30+i*33+(i%2)*10,y=i<7?120+(i%3)*6:205+(i%3)*5;trees+=`<g transform="translate(${x} ${y}) scale(.8)"><rect x="-2" y="-18" width="4" height="18" fill="#5A3D28"/><circle cx="0" cy="-28" r="13" fill="${i%2?'#21492E':'#3D7350'}"/></g>`;}
+ land.innerHTML=`<rect width="520" height="300" rx="16" fill="#EAF0EA"/><path d="M0 130 Q130 100 260 122 T520 112 V300 H0Z" fill="#8AA98F"/><path d="M0 190 Q150 175 300 192 T520 186 V300 H0Z" fill="#3D7350"/>
+ <path d="M300 300 C320 250 280 215 330 190" stroke="#5B8A9E" stroke-width="${26-12*k}" fill="none" stroke-linecap="round"/>
+ <ellipse cx="150" cy="248" rx="${70*k}" ry="${22*k}" fill="#5B8A9E" opacity="${k?1:0}"/><ellipse cx="150" cy="248" rx="${84*k}" ry="${28*k}" fill="none" stroke="#8AA98F" stroke-width="6" opacity="${k?1:0}"/>${trees}
+ <text x="22" y="34" font-family="JetBrains Mono" font-size="12" letter-spacing="2" fill="#B88A4E">${k<.05?'TODAY':'WITH NbS · '+cov.value+'%'}</text>`;
+ const ch=document.getElementById('cmpChart');const W=620,H=330,ax0=50,ax1=600,ay0=290,ay1=40;
+ const f=(x,kk)=>{const peak=.85-.45*kk,wid=.08+.07*kk,base=.12+.12*kk;return base+(peak-base)*Math.exp(-Math.pow((x-(.42+.08*kk))/wid,2));};
+ const path=kk=>Array.from({length:101},(_,i)=>`${i?'L':'M'}${(ax0+(ax1-ax0)*i/100).toFixed(1)} ${(ay0-(ay0-ay1)*f(i/100,kk)).toFixed(1)}`).join(' ');
+ ch.innerHTML=`<line x1="${ax0}" y1="${ay0}" x2="${ax1}" y2="${ay0}" stroke="#E4E0D5" stroke-width="2"/><line x1="${ax0}" y1="${ay1-10}" x2="${ax0}" y2="${ay0}" stroke="#E4E0D5" stroke-width="2"/>
+ <text x="${ax0+8}" y="${ay1}" font-family="Manrope" font-size="15" fill="#5C665E">river flow</text><text x="${ax1}" y="${ay0+26}" text-anchor="end" font-family="Manrope" font-size="15" fill="#5C665E">time after a storm</text>
+ <path d="${path(0)}" stroke="#B0472F" stroke-width="3" fill="none" stroke-dasharray="${k>0?'7 6':'0'}"/><path d="${path(k)} L${ax1} ${ay0} L${ax0} ${ay0}Z" fill="#21492E" opacity=".07"/><path d="${path(k)}" stroke="#21492E" stroke-width="4.5" fill="none"/>
+ <g font-family="Manrope" font-weight="700" font-size="15"><circle cx="${ax1-210}" cy="22" r="6" fill="#B0472F"/><text x="${ax1-198}" y="27" fill="#2B322D">today</text><circle cx="${ax1-120}" cy="22" r="6" fill="#21492E"/><text x="${ax1-108}" y="27" fill="#2B322D">with NbS</text></g>`;
+ document.getElementById('k1').textContent=Math.round(53*k)+'%';document.getElementById('k2').textContent=Math.round(100*k)+'%';document.getElementById('k3').textContent=Math.round(40*k)+'%';}
+cov.oninput=cmp;cmp();
+
+// studio
+const MEAS=[['wetland','Wetland','#7FA7B8'],['forest','Forest','#21492E'],['buffer','Buffer strip','#8AA98F'],['pond','Pond','#9DBFCB'],['erase','Remove','#E8E1CF']];
+let tool='wetland';const pal=document.getElementById('palette');
+MEAS.forEach(([k,n,c])=>{const b=document.createElement('button');b.className='chip';b.innerHTML=`<i style="background:${c}"></i>${n}`;b.setAttribute('aria-pressed',k===tool);b.onclick=()=>{tool=k;[...pal.children].forEach(x=>x.setAttribute('aria-pressed',x===b));};pal.appendChild(b);});
+const board=document.getElementById('board');const RIVC=new Set([5,13,20,28,35]);const TOWN=new Set([30,31,38,39]);
+const state=Array(40).fill('');
+for(let i=0;i<40;i++){const b=document.createElement('button');b.className='cell'+(RIVC.has(i)?' river':TOWN.has(i)?' town':'');b.setAttribute('aria-label',RIVC.has(i)?'River':TOWN.has(i)?'Town':'Field '+(i+1));b.onclick=()=>{if(RIVC.has(i)||TOWN.has(i))return;state[i]=tool==='erase'?'':tool;b.className='cell '+state[i];score();};board.appendChild(b);}
+const near=i=>[i-1,i+1,i-8,i+8].some(j=>RIVC.has(j));const upstream=i=>(i%8)<4;
+function calc(s){let fl=0,dr=0,hab=0,farm=0,cost=0;s.forEach((m,i)=>{if(!m)return;const nr=near(i),up=upstream(i);
+ if(m==='wetland'){fl+=nr?9:5;dr+=4;hab+=8;cost+=6;} if(m==='forest'){fl+=up?6:3;dr+=up?3:1;hab+=7;cost+=3;} if(m==='buffer'){fl+=nr?4:1;dr+=1;hab+=5;cost+=2;} if(m==='pond'){fl+=up?5:3;dr+=6;hab+=4;cost+=4;}
+ farm+=m==='buffer'?.5:1;});
+ return{fl:Math.min(100,fl*2.2),dr:Math.min(100,dr*3),hab:Math.min(100,hab*1.6),farm:Math.max(0,100-farm*4),cost:Math.min(100,cost*2.2)};}
+const OPT=(()=>{const s=Array(40).fill('');[4,12,21,27,36].forEach(i=>s[i]='wetland');[0,1,8,9,16].forEach(i=>s[i]='forest');[6,14,29].forEach(i=>s[i]='buffer');[2,10].forEach(i=>s[i]='pond');return s;})();
+let showOpt=false;
+const BARS=[['fl','Flood peak lowered'],['dr','Dry-season water'],['hab','Habitat for nature'],['farm','Farmland kept'],['cost','Cost (lower is better)']];
+document.getElementById('bars').innerHTML=BARS.map(([k,n])=>`<div class="row"><div><span>${n}</span><span id="v-${k}">0</span></div><div class="meter"><i id="m-${k}"></i><s id="o-${k}"></s></div></div>`).join('');
+function score(){const r=calc(state),o=calc(OPT);BARS.forEach(([k])=>{document.getElementById('m-'+k).style.width=r[k]+'%';document.getElementById('m-'+k).style.background=k==='cost'?'#B88A4E':'#3D7350';document.getElementById('v-'+k).textContent=Math.round(r[k]);const s=document.getElementById('o-'+k);s.style.display=showOpt?'block':'none';s.style.left=o[k]+'%';});}
+document.getElementById('optBtn').onclick=()=>{showOpt=true;score();document.getElementById('optNote').textContent='Gold marks: the optimiser balances flood safety, water and farmland. Can you beat it?';};
+document.getElementById('clrBtn').onclick=()=>{state.fill('');[...board.children].forEach((b,i)=>{if(!RIVC.has(i)&&!TOWN.has(i))b.className='cell';});score();};
+score();
+
+// IUCN
+const CRIT=['Solves a real societal challenge','Designed at the right scale','Gains for biodiversity','Economically viable','Fair, inclusive decision-making','Trade-offs openly balanced','Managed and adapted over time','Built to last and to be scaled up'];
+const ans=Array(8).fill(0);const qs=document.getElementById('iucnQs');
+CRIT.forEach((c,i)=>{const r=document.createElement('div');r.className='qrow';r.innerHTML=`<span>${i+1}. ${c}</span><div class="seg">${['Not yet','Partly','Yes'].map((l,v)=>`<button aria-pressed="${v===0}" data-v="${v}">${l}</button>`).join('')}</div>`;r.querySelectorAll('button').forEach(b=>b.onclick=()=>{ans[i]=+b.dataset.v;r.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));radar();});qs.appendChild(r);});
+function radar(){const R=120,cx=170,cy=170;let g='';for(let l=1;l<=2;l++){g+=`<polygon points="${CRIT.map((_,i)=>{const a=-Math.PI/2+i*Math.PI/4;return (cx+Math.cos(a)*R*l/2)+','+(cy+Math.sin(a)*R*l/2)}).join(' ')}" fill="none" stroke="#E4E0D5" stroke-width="1.5"/>`;}
+ CRIT.forEach((_,i)=>{const a=-Math.PI/2+i*Math.PI/4;g+=`<line x1="${cx}" y1="${cy}" x2="${cx+Math.cos(a)*R}" y2="${cy+Math.sin(a)*R}" stroke="#E4E0D5"/><text x="${cx+Math.cos(a)*(R+20)}" y="${cy+Math.sin(a)*(R+20)+5}" text-anchor="middle" font-family="JetBrains Mono" font-size="13" fill="#B88A4E">${i+1}</text>`;});
+ const pts=ans.map((v,i)=>{const a=-Math.PI/2+i*Math.PI/4,r=R*(.08+.92*v/2);return (cx+Math.cos(a)*r)+','+(cy+Math.sin(a)*r)}).join(' ');
+ g+=`<polygon points="${pts}" fill="#3D7350" fill-opacity=".25" stroke="#21492E" stroke-width="3" stroke-linejoin="round" style="transition:all .4s"/>`;
+ document.getElementById('radar').innerHTML=g;const sc=Math.round(ans.reduce((a,b)=>a+b,0)/16*100);
+ document.getElementById('iucnScore').innerHTML=`${sc}% aligned<br><span style="font-family:Manrope;font-size:15px;font-weight:500;color:var(--soft)">${sc<40?'A promising start. Let us help you strengthen it.':sc<75?'Getting there. Focus on the short spokes.':'Strong. Ready for a full IUCN assessment.'}</span><br><a class="btn ghost small" style="margin-top:12px" href="#contact">Get a full assessment</a>`;}
+radar();
+
+// services
+document.getElementById('loop').innerHTML=STEPS.map((s,i)=>`<div class="card step reveal"><div class="n">0${i+1}</div><h3>${s.n}</h3><p style="color:var(--soft);font-size:16px">${s.d}</p><ul>${s.g.map(x=>`<li>${x}</li>`).join('')}</ul><div class="dur">Typical duration: <span class="ph">To confirm</span></div><button class="btn ghost small" style="margin-top:14px" data-film="${['site','design','model','monitor'][i]}">▶ Watch 30 s</button></div>`).join('');
+
+// projects
+document.getElementById('projGrid').innerHTML=PROJ.map((p,i)=>`<article class="card proj reveal"><div class="img"><svg viewBox="0 0 400 200" width="100%" height="100%" preserveAspectRatio="xMidYMid slice"><rect width="400" height="200" fill="#EAF0EA"/><path d="M0 110 Q100 ${80+i*10} 200 104 T400 96 V200 H0Z" fill="#8AA98F"/><path d="M0 150 Q120 138 240 152 T400 146 V200 H0Z" fill="#3D7350"/>${i===0?'<ellipse cx="150" cy="170" rx="54" ry="14" fill="#5B8A9E"/>':''}${i===2?'<circle cx="320" cy="50" r="22" fill="#D9C08A"/>':''}<text x="20" y="34" font-family="JetBrains Mono" font-size="12" letter-spacing="2" fill="#B88A4E">PHOTO TO ADD</text></svg></div><div class="body"><div class="mono" style="font-size:11px">${p.p}</div><h3>${p.n}${p.ph?'<span class="ph">Placeholder</span>':''}</h3><p>${p.d}</p></div></article>`).join('');
+
+// form
+document.getElementById('form').onsubmit=async e=>{e.preventDefault();const f=e.target,m=document.getElementById('formMsg');if(!f.name.value||!f.org.value){m.textContent='Please add your name and organisation.';return;}
+ const data={name:f.name.value,org:f.org.value,topic:f.topic.value,msg:f.msg.value};
+ try{const r=await fetch('/api/inquiries',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});if(!r.ok)throw 0;m.textContent='Thank you. We will get back to you within two working days.';f.reset();}
+ catch(err){m.innerHTML='The form is not connected yet. Please email us at <b>'+(document.getElementById('mail')?.textContent||'')+'</b> and we will get back to you.';}};
+
+// search
+const IDX=[...SOL.map(s=>({t:s.n,k:'Solution',h:'#solution-'+s.id,x:s.t+' '+s.d})),...TOOLS.map(t=>({t:t.n,k:'Tool',h:'#tool-'+t.id,x:t.q+' '+t.d+' '+t.plain})),...STEPS.map(s=>({t:s.n,k:'Service',h:'#services',x:s.d})),...PROJ.map(p=>({t:p.n,k:'Project',h:'#projects',x:p.p+' '+p.d})),
+ {t:'Quick finder',k:'Page',h:'#finder',x:'challenge floods drought recommend'},{t:'With / without comparison',k:'Page',h:'#compare',x:'flood peak baseflow model'},{t:'IUCN self-check',k:'Page',h:'#studio',x:'global standard criteria'},{t:'Book a call',k:'Contact',h:'#contact',x:'email talk meeting'},{t:'Global NbS map',k:'Page',h:'#map',x:'world inventory sites atlas'},{t:'About NbS+C',k:'Page',h:'#about',x:'team mission founder vub'},{t:'Watch the 30 s film',k:'Video',h:'#story',x:'video film journey',fn:()=>document.querySelector('[data-film=journey]').click()}];
+const modal=document.getElementById('modal'),sq=document.getElementById('sq'),sres=document.getElementById('sres');let si=0,hits=[];
+function openS(){modal.classList.add('open');sq.value='';run();setTimeout(()=>sq.focus(),20);}
+function closeS(){modal.classList.remove('open');}
+function run(){const q=sq.value.toLowerCase().trim();hits=IDX.filter(e=>!q||(e.t+' '+e.x+' '+e.k).toLowerCase().includes(q)).slice(0,10);si=0;draw();}
+function draw(){sres.innerHTML=hits.map((h,i)=>`<li><a href="${h.h}" class="${i===si?'sel':''}" data-i="${i}">${h.t}<span>${h.k}</span></a></li>`).join('')||'<li style="padding:16px;color:var(--soft)">No match. Try "flood", "groundwater" or "monitor".</li>';sres.querySelectorAll('a').forEach(a=>a.onclick=()=>{const h=hits[+a.dataset.i];closeS();h.fn&&setTimeout(h.fn,300);});}
+sq.oninput=run;
+sq.onkeydown=e=>{if(e.key==='ArrowDown'){si=Math.min(hits.length-1,si+1);draw();e.preventDefault();}if(e.key==='ArrowUp'){si=Math.max(0,si-1);draw();e.preventDefault();}if(e.key==='Enter'&&hits[si]){const h=hits[si];closeS();location.hash=h.h;h.fn&&setTimeout(h.fn,300);}};
+document.getElementById('openSearch').onclick=openS;
+modal.onclick=e=>{if(e.target===modal)closeS();};
+addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openS();}if(e.key==='/'&&!/input|textarea/i.test(document.activeElement.tagName)){e.preventDefault();openS();}if(e.key==='Escape')closeS();});
+
+watch();
+</script>
+<script>
+
+/* =====================================================================
+   PAGES · ROUTER · I18N · FILM · MAP · BRIEFS
+   ===================================================================== */
+(function(){
+const C=CONTENT, home=document.getElementById('home'), page=document.getElementById('page');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const solBy=id=>C.solutions.find(s=>s.id===id), toolBy=id=>C.tools.find(t=>t.id===id);
+const VIDEO_LABEL={wetland:'Wetlands',buffer:'Riparian buffers',forest:'Afforestation',flood:'Floodplains',aquifer:'Aquifer recharge',site:'Site selection',design:'Design',model:'Modelling',monitor:'Monitoring',journey:'The NbS+C journey'};
+const isLive=location.protocol.startsWith('http')&&!/claude\.ai|claudeusercontent|anthropic/.test(location.host);
+
+/* ---------- film modal ---------- */
+const film=document.createElement('div');film.className='film';film.setAttribute('role','dialog');film.setAttribute('aria-modal','true');film.setAttribute('aria-label','Video');
+film.innerHTML='<div class="box"><button class="x" aria-label="Close video">✕</button><video controls playsinline preload="none"></video></div>';document.body.appendChild(film);
+const fv=film.querySelector('video');
+function openFilm(k){fv.poster='media/'+k+'.jpg';fv.src='media/'+k+'.mp4';film.classList.add('open');fv.play().catch(()=>{});film.querySelector('.x').focus();}
+function closeFilm(){fv.pause();film.classList.remove('open');}
+film.querySelector('.x').onclick=closeFilm;film.onclick=e=>{if(e.target===film)closeFilm();};
+addEventListener('keydown',e=>{if(e.key==='Escape')closeFilm();});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-film]');if(b){e.preventDefault();openFilm(b.dataset.film);}});
+
+/* ---------- helpers ---------- */
+function videoBlock(k,cap){return `<div class="media"><video controls playsinline preload="none" poster="media/${k}.jpg" src="media/${k}.mp4" aria-label="${esc(VIDEO_LABEL[k]||k)} explainer video"></video><span class="cap">${esc(cap)}</span></div>`;}
+function three(a,b,c){return `<div class="three"><div><b>What it is</b><span>${a}</span></div><div><b>Why it matters</b><span>${b}</span></div><div><b>What you get</b><span>${c}</span></div></div>`;}
+function strip(h,btn='Book a 20-min call'){return `<div class="strip"><h3>${h}</h3><a class="btn primary" href="#contact">${btn} <span class="arr">→</span></a></div>`;}
+function toolCards(ids){return `<div class="mini-tools">${ids.map(id=>{const t=toolBy(id);return t?`<a class="card" href="#tool-${t.id}"><span class="badge ${t.c}" style="position:static;display:inline-block">${t.s}</span><b>${esc(t.n)}</b><span>${esc(t.q)}</span></a>`:'';}).join('')}</div>`;}
+
+/* ---------- solution page ---------- */
+function solutionPage(id){const s=solBy(id);if(!s)return notFound();const i=C.solutions.indexOf(s);
+ const prev=C.solutions[(i+C.solutions.length-1)%C.solutions.length],next=C.solutions[(i+1)%C.solutions.length];
+ const media=s.video?videoBlock(s.video,'Explainer · '+(VIDEO_LABEL[s.video]||'')):`<div class="anim-steps" id="animSteps">${s.steps.map((st,k)=>`<div><svg viewBox="0 0 44 44">${ICON[s.id].replace(/<\/?svg[^>]*>/g,'')}</svg><span class="mono" style="font-size:11px">${k+1} / 4</span><b>${esc(st.h)}</b></div>`).join('')}</div>`;
+ return `<div class="wrap">
+ <div class="crumb"><a href="#solutions">Solutions</a> / ${esc(s.n)}</div>
+ <div class="p-hero"><div><div class="mono">Nature-based Solution · ${i+1} of ${C.solutions.length}</div><h1>${esc(s.n)}<br><em>${esc(s.t.toLowerCase())}.</em></h1>
+  <p class="lead plain">${esc(s.d)}</p><p class="lead tech">${esc(s.tech)}</p>
+  <div class="acts"><a class="btn primary" href="#contact">Is it right for my site? <span class="arr">→</span></a><a class="btn ghost" href="#brief-solution-${s.id}">One-page brief</a></div></div>
+  <div>${media}</div></div>
+ ${three(esc(s.d.split('.')[0])+'.', 'It works with the water cycle instead of against it, and pays back in several ways at once.', 'A site-specific design, its expected benefits and a way to track them.')}
+ <section class="p-sec"><div class="mono">How it works</div><h2>From problem <em>to payoff.</em></h2>
+  <div class="steps4">${s.steps.map((st,k)=>`<div class="card"><div class="n">0${k+1}</div><h3>${esc(st.h)}</h3><p>${esc(st.p)}</p></div>`).join('')}</div></section>
+ <section class="p-sec"><div class="mono">Benefits</div><h2>Three kinds of value, <em>measured.</em></h2>
+  <div class="ben3"><div class="card"><h3>Environmental</h3><ul>${s.env.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div><div class="card"><h3>Economic</h3><ul>${s.eco.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div><div class="card"><h3>Social</h3><ul>${s.soc.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></div></section>
+ <section class="p-sec two"><div class="card"><div class="mono">Where it fits</div><p style="font-size:19px;margin-top:10px">${esc(s.fits)}</p></div>
+  <div class="card"><div class="mono">For engineers</div><p style="font-size:16px;margin-top:10px;color:var(--soft)">${esc(s.tech)}</p></div></section>
+ <section class="p-sec"><div class="mono">Tools that assess it</div><h2>Test it <em>before you build it.</em></h2>${toolCards(s.tools)}</section>
+ ${strip('Thinking about '+esc(s.n.toLowerCase())+'? Let’s check your site.')}
+ <div class="next-prev"><a href="#solution-${prev.id}">← ${esc(prev.n)}</a><a href="#solution-${next.id}">${esc(next.n)} →</a></div></div>`;}
+
+/* ---------- tool page ---------- */
+function toolPage(id){const t=toolBy(id);if(!t)return notFound();const i=C.tools.indexOf(t);
+ const prev=C.tools[(i+C.tools.length-1)%C.tools.length],next=C.tools[(i+1)%C.tools.length];
+ let media='';
+ if(t.image)media=`<div class="media"><img src="${t.image}" alt="Screenshot of the ${esc(t.n)} interface"><span class="cap">Real interface · example data</span></div>`;
+ else if(t.video)media=videoBlock(t.video,'In motion · '+VIDEO_LABEL[t.video]);
+ else media=`<div class="media" style="aspect-ratio:16/10;display:grid;place-items:center"><div style="width:70%">${document.querySelector(`#toolGrid a[href="#tool-${t.id}"] .pv`)?.innerHTML||''}</div><span class="cap">Preview</span></div>`;
+ const extra=t.id==='studio'?`<div class="acts" style="margin-top:14px"><a class="btn ghost small" href="#studio">Try the pocket version</a></div>`:'';
+ const moreMedia=(t.image&&t.video)?`<section class="p-sec"><div class="mono">In motion</div><h2>The idea <em>in 30 seconds.</em></h2><div style="max-width:900px">${videoBlock(t.video,VIDEO_LABEL[t.video])}</div></section>`:'';
+ return `<div class="wrap">
+ <div class="crumb"><a href="#tools">Tools</a> / ${esc(t.n)}</div>
+ <div class="p-hero"><div><span class="badge ${t.c}" style="position:static;display:inline-block">${t.s}</span><div class="mono" style="margin-top:14px">${esc(t.q)}</div><h1>${esc(t.n)}</h1>
+  <p class="lead plain">${esc(t.plain)}</p><p class="lead tech">${esc(t.tech)}</p>
+  <div class="acts"><a class="btn primary" href="#contact">${t.s==='Live'?'Request access':'Join the pilot'} <span class="arr">→</span></a><a class="btn ghost" href="#brief-tool-${t.id}">One-page brief</a></div>${extra}</div>
+  <div>${media}</div></div>
+ ${three(esc(t.plain.split('.')[0])+'.', esc(t.q), esc(t.outputs[0])+'.')}
+ <section class="p-sec two"><div class="card"><div class="mono">You bring</div><ul class="io" style="margin-top:10px">${t.inputs.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+  <div class="card"><div class="mono">You get</div><ul class="io" style="margin-top:10px">${t.outputs.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></section>
+ <section class="p-sec"><div class="mono">A typical session</div><h2>Four steps, <em>no code.</em></h2>
+  <div class="steps4">${t.session.map((st,k)=>`<div class="card"><div class="n">0${k+1}</div><h3>${esc(st)}</h3></div>`).join('')}</div></section>
+ ${moreMedia}
+ <section class="p-sec two"><div class="card"><div class="mono">Who it is for</div><p style="font-size:19px;margin-top:10px">${esc(t.w)}</p></div><div class="card"><div class="mono">For engineers</div><p style="font-size:16px;margin-top:10px;color:var(--soft)">${esc(t.tech)}</p></div></section>
+ ${strip('Want to see '+esc(t.n)+' on your own area?')}
+ <div class="next-prev"><a href="#tool-${prev.id}">← ${esc(prev.n)}</a><a href="#tool-${next.id}">${esc(next.n)} →</a></div></div>`;}
+
+/* ---------- about ---------- */
+function aboutPage(){return `<div class="wrap">
+ <div class="crumb"><a href="#story">Home</a> / About</div>
+ <div class="p-hero"><div><div class="mono">About NbS+C</div><h1>Science you can <em>build on.</em></h1>
+  <p class="lead">NbS+C helps municipalities, water agencies, landowners and funders put Nature-based Solutions in the right place, prove what they deliver and keep them working. Our work grows out of research on water, groundwater and Nature-based Solutions at Vrije Universiteit Brussel (VUB).</p>
+  <div class="acts"><a class="btn primary" href="#contact">Talk to us <span class="arr">→</span></a><button class="btn ghost" data-film="journey">▶ Watch the 30 s film</button></div></div>
+  <div>${videoBlock('journey','The NbS+C journey · 30 s')}</div></div>
+ <section class="p-sec"><div class="mono">What we stand for</div><h2>Four promises.</h2>
+  <div class="values">${[['Evidence first','Every recommendation is backed by data and models you can inspect.'],['Plain language','Results a mayor can explain to a council, and an engineer can check.'],['Whole loop','From site selection to monitoring, and back again.'],['Nature, with people','Stakeholders shape the plan; the IUCN Global Standard keeps it honest.']].map((v,i)=>`<div class="card"><div class="mono">0${i+1}</div><h3>${v[0]}</h3><p>${v[1]}</p></div>`).join('')}</div></section>
+ <section class="p-sec"><div class="mono">Who we are</div><h2>The team.</h2>
+  <div class="card person"><div class="avatar">EY</div><div><div class="mono">Founder</div><h3 style="font-family:var(--serif);font-size:30px;font-weight:600;margin:6px 0">Estifanos Addisu Yimer (PhD)</h3>
+  <p style="color:var(--soft)">Postdoctoral researcher at Vrije Universiteit Brussel working on Nature-based Solutions for hydroclimatic resilience: geospatial modelling, groundwater simulation, machine-learning suitability analysis and science-to-policy communication, with projects in Belgium and Ethiopia.</p>
+  <p style="margin-top:12px"><span class="ph">Add photo and short personal line</span> <span class="ph">Add team members and advisors</span></p></div></div></section>
+ <section class="p-sec"><div class="mono">Partners</div><h2>Who we work with.</h2><div class="card" style="padding:28px;color:var(--soft)">Partner and client logos go here once permission is confirmed. <span class="ph">Placeholder</span></div></section>
+ ${strip('Have a site, a catchment or a question?')}</div>`;}
+
+/* ---------- map ---------- */
+const TYPES={'Wetlands':'#5B8A9E','Rivers & riparian':'#3D7350','Forests & slopes':'#21492E','Floodplains':'#B88A4E','Aquifer recharge':'#7C5BA6'};
+let MAP={sites:C.sites.slice(),filter:new Set(Object.keys(TYPES)),src:'examples'};
+function mapPage(){return `<div class="wrap">
+ <div class="crumb"><a href="#projects">Projects</a> / Global NbS map</div>
+ <div class="sec-head" style="margin-bottom:28px"><div class="mono">Global NbS map</div><h2 style="font-family:var(--serif);font-size:clamp(34px,4vw,54px);font-weight:600;line-height:1.08;margin:14px 0 14px">Nature at work, <em style="color:var(--gold)">around the world.</em></h2>
+  <p style="color:var(--soft)">Implemented Nature-based Solutions for water, by type. Hover a dot to learn more, or filter by type.</p></div>
+ <div class="legend" id="legend"></div>
+ <div class="map-wrap"><div class="card map-card"><svg id="worldmap" viewBox="0 0 960 500" role="img" aria-label="World map of Nature-based Solution sites"></svg><div class="map-tip" id="mtip"></div>
+  <div class="note" id="mnote">Example sites from public sources, shown until the NbS+C global inventory is connected.</div>
+  <div class="loader"><label class="btn ghost small" style="cursor:pointer">Load your inventory (GeoJSON or CSV)<input type="file" id="invfile" accept=".json,.geojson,.csv" hidden></label><span>CSV columns: name, lat, lon, type, country</span></div></div>
+  <div class="card site-list" id="slist" aria-label="Site list"></div></div></div>`;}
+function loadD3(cb){if(window.d3)return cb();const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/d3@7.8.5/dist/d3.min.js';s.onload=cb;s.onerror=()=>{document.getElementById('mnote').textContent='The map library could not load. Check your connection.';};document.head.appendChild(s);}
+let LAND=null;
+function drawMap(){loadD3(async()=>{
+ if(!LAND){try{LAND=await (await fetch('land.json')).json();}catch(e){LAND={type:'FeatureCollection',features:[]};}}
+ const svg=d3.select('#worldmap');if(svg.empty())return;svg.selectAll('*').remove();
+ const proj=d3.geoNaturalEarth1().fitExtent([[10,10],[950,490]],{type:'Sphere'}),path=d3.geoPath(proj);
+ svg.append('path').attr('d',path({type:'Sphere'})).attr('fill','#EAF0EA');
+ svg.append('path').attr('d',path(d3.geoGraticule10())).attr('fill','none').attr('stroke','#DDE6DD').attr('stroke-width',.6);
+ svg.append('g').selectAll('path').data(LAND.features).join('path').attr('d',path).attr('fill','#C3D2C4').attr('stroke','#F7F4ED').attr('stroke-width',.5);
+ const vis=MAP.sites.filter(s=>MAP.filter.has(s.type)||!TYPES[s.type]);
+ const tip=document.getElementById('mtip'),card=document.querySelector('.map-card');
+ const g=svg.append('g');
+ g.selectAll('circle').data(vis).join('circle').attr('cx',d=>proj([d.lon,d.lat])[0]).attr('cy',d=>proj([d.lon,d.lat])[1]).attr('r',0).attr('fill',d=>TYPES[d.type]||'#5C665E').attr('stroke','#fff').attr('stroke-width',1.5).style('cursor','pointer')
+  .on('mouseenter',(e,d)=>{const r=card.getBoundingClientRect();tip.style.display='block';tip.innerHTML=`<b>${esc(d.n)}</b><br>${esc(d.country||'')} · ${esc(d.type)}${d.note?'<br><span style="opacity:.8">'+esc(d.note)+'</span>':''}`;tip.style.left=(e.clientX-r.left+12)+'px';tip.style.top=(e.clientY-r.top+12)+'px';})
+  .on('mouseleave',()=>tip.style.display='none')
+  .transition().delay((d,i)=>i*35).duration(500).attr('r',d=>MAP.sel===d.n?11:7);
+ document.getElementById('slist').innerHTML=vis.map(s=>`<button data-n="${esc(s.n)}" class="${MAP.sel===s.n?'sel':''}"><b>${esc(s.n)}</b><span><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${TYPES[s.type]||'#5C665E'};margin-right:6px"></i>${esc(s.type)} · ${esc(s.country||'')}</span></button>`).join('')||'<p style="padding:14px;color:var(--soft)">No sites for this filter.</p>';
+ document.querySelectorAll('#slist button').forEach(b=>b.onclick=()=>{MAP.sel=b.dataset.n;drawMap();});
+ document.getElementById('legend').innerHTML=Object.entries(TYPES).map(([k,c])=>`<button class="chip" aria-pressed="${MAP.filter.has(k)}" data-t="${esc(k)}"><i style="background:${c}"></i>${esc(k)} · ${MAP.sites.filter(s=>s.type===k).length}</button>`).join('');
+ document.querySelectorAll('#legend button').forEach(b=>b.onclick=()=>{const t=b.dataset.t;MAP.filter.has(t)?MAP.filter.delete(t):MAP.filter.add(t);drawMap();});
+ const inp=document.getElementById('invfile');inp.onchange=async()=>{const f=inp.files[0];if(!f)return;const txt=await f.text();let rows=[];
+  try{if(/\.csv$/i.test(f.name)){const [h,...ls]=txt.trim().split(/\r?\n/);const cols=h.split(',').map(x=>x.trim().toLowerCase());rows=ls.map(l=>{const v=l.split(',');const o={};cols.forEach((c,i)=>o[c]=v[i]);return {n:o.name||'Site',lat:+o.lat,lon:+o.lon,type:o.type||'Other',country:o.country||''};});}
+   else{const gj=JSON.parse(txt);rows=(gj.features||[]).map(ft=>{const c=d3.geoCentroid(ft);const p=ft.properties||{};return {n:p.name||p.NAME||'Site',lat:c[1],lon:c[0],type:p.type||p.TYPE||p.nbs_type||'Other',country:p.country||p.COUNTRY||''};});}
+   rows=rows.filter(r=>isFinite(r.lat)&&isFinite(r.lon));MAP.sites=rows;MAP.filter=new Set([...Object.keys(TYPES),...rows.map(r=>r.type)]);rows.forEach(r=>{if(!TYPES[r.type])TYPES[r.type]=['#8AA98F','#C9B48A','#B0472F','#2B322D'][Object.keys(TYPES).length%4];});
+   document.getElementById('mnote').textContent=`${rows.length} sites loaded from ${f.name} (only in your browser).`;drawMap();}
+  catch(e){document.getElementById('mnote').textContent='Could not read that file. Use GeoJSON, or CSV with name, lat, lon, type, country.';}};
+});}
+
+/* ---------- briefs ---------- */
+function briefText(kind,x){
+ if(kind==='solution')return [x.n+' · '+x.t,x.d,'How it works: '+x.steps.map(s=>s.h+': '+s.p).join(' '),'Environmental: '+x.env.join('; '),'Economic: '+x.eco.join('; '),'Social: '+x.soc.join('; '),'Where it fits: '+x.fits,'Tools: '+x.tools.map(t=>toolBy(t).n).join(', '),'NbS+C · Designing resilience with nature'].join('\n\n');
+ return [x.n+' · '+x.s,x.q,x.plain,'You bring: '+x.inputs.join('; '),'You get: '+x.outputs.join('; '),'Session: '+x.session.join(' → '),'For: '+x.w,'NbS+C · Designing resilience with nature'].join('\n\n');}
+function briefPage(kind,id){const x=kind==='solution'?solBy(id):toolBy(id);if(!x)return notFound();
+ const pdf=`/api/brief/${kind}/${id}.pdf`;
+ const body=kind==='solution'?`<div class="mono">Nature-based Solution</div><h1>${esc(x.n)}</h1><p style="font-size:19px;color:var(--soft)">${esc(x.t)}. ${esc(x.d)}</p>
+  <h2>How it works</h2><ol style="padding-left:20px">${x.steps.map(s=>`<li><b>${esc(s.h)}.</b> ${esc(s.p)}</li>`).join('')}</ol>
+  <div class="cols"><div><h2>Environmental</h2><ul>${x.env.map(v=>`<li>${esc(v)}</li>`).join('')}</ul></div><div><h2>Economic</h2><ul>${x.eco.map(v=>`<li>${esc(v)}</li>`).join('')}</ul></div><div><h2>Social</h2><ul>${x.soc.map(v=>`<li>${esc(v)}</li>`).join('')}</ul></div></div>
+  <h2>Where it fits</h2><p>${esc(x.fits)}</p><h2>Tools that assess it</h2><p>${x.tools.map(t=>esc(toolBy(t).n)).join(' · ')}</p>`
+ :`<div class="mono">NbS+C tool · ${esc(x.s)}</div><h1>${esc(x.n)}</h1><p style="font-size:19px;color:var(--soft)">${esc(x.plain)}</p>
+  <div class="cols" style="grid-template-columns:1fr 1fr"><div><h2>You bring</h2><ul>${x.inputs.map(v=>`<li>${esc(v)}</li>`).join('')}</ul></div><div><h2>You get</h2><ul>${x.outputs.map(v=>`<li>${esc(v)}</li>`).join('')}</ul></div></div>
+  <h2>A typical session</h2><p>${x.session.map(esc).join(' → ')}</p><h2>Who it is for</h2><p>${esc(x.w)}</p><h2>For engineers</h2><p style="color:var(--soft)">${esc(x.tech)}</p>`;
+ return `<div class="wrap"><div class="crumb"><a href="#${kind}-${id}">${esc(x.n)}</a> / One-page brief</div>
+ <div class="brief-acts"><a class="btn primary small" href="${pdf}" id="pdfBtn">Download PDF</a><button class="btn ghost small" id="copyBrief">Copy text</button><a class="btn ghost small" href="#${kind}-${id}">Back</a></div>
+ <p class="note" id="briefNote" style="text-align:center;margin-bottom:20px"></p>
+ <article class="brief"><div class="hdr"><span class="logo" style="font-size:26px">NbS<b>+</b>C</span><span class="mono" style="font-size:11px">One-page brief</span></div>${body}
+ <div class="foot"><span>NbS+C · Designing resilience with nature</span><span>Contact: <span class="ph">add email</span></span></div></article></div>`;}
+
+function notFound(){return `<div class="wrap"><h1 style="font-family:var(--serif);font-size:48px">Page not found.</h1><p><a href="#story">Back home</a></p></div>`;}
+
+/* ---------- router ---------- */
+function show(html,after){home.hidden=true;page.hidden=false;page.innerHTML=html;scrollTo(0,0);document.body.dataset.route='page';after&&after();
+ const h=page.querySelector('h1');document.title=(h?h.textContent+' · ':'')+'NbS+C';}
+function route(){const h=decodeURIComponent(location.hash.slice(1));let m;
+ if((m=h.match(/^solution-(\w+)$/)))return show(solutionPage(m[1]),animSteps);
+ if((m=h.match(/^tool-(\w+)$/)))return show(toolPage(m[1]));
+ if((m=h.match(/^brief-(solution|tool)-(\w+)$/)))return show(briefPage(m[1],m[2]),()=>{
+   const x=m[1]==='solution'?solBy(m[2]):toolBy(m[2]);
+   document.getElementById('copyBrief').onclick=async()=>{try{await navigator.clipboard.writeText(briefText(m[1],x));document.getElementById('briefNote').textContent='Copied to your clipboard.';}catch(e){document.getElementById('briefNote').textContent='Copy was blocked here; select the text below instead.';}};
+   document.getElementById('pdfBtn').onclick=async e=>{e.preventDefault();const u=e.currentTarget.getAttribute('href');let ok=false;
+     try{const r=await fetch(u,{method:'HEAD'});ok=r.ok&&(r.headers.get('content-type')||'').includes('pdf');}catch(err){}
+     if(ok)location.href=u;else document.getElementById('briefNote').textContent='PDF download is not switched on for this site yet. Use Copy text, or your browser\u2019s Print to save as PDF.';};});
+ if(h==='about')return show(aboutPage());
+ if(h==='map')return show(mapPage(),drawMap);
+ // home
+ const wasPage=!home.hidden?false:true;home.hidden=false;page.hidden=true;page.innerHTML='';document.body.dataset.route='home';document.title='NbS+C · Designing resilience with nature';
+ window.dispatchEvent(new Event('scroll'));
+ if(h){const el=document.getElementById(h);if(el)setTimeout(()=>el.scrollIntoView({behavior:wasPage?'instant':'smooth'}),wasPage?30:0);}
+ else if(wasPage)scrollTo(0,0);
+ watch();}
+let animT=null;function animSteps(){clearInterval(animT);const w=document.getElementById('animSteps');if(!w)return;let k=0;const ds=[...w.children];const tick=()=>{ds.forEach((d,i)=>d.classList.toggle('on',i===k));k=(k+1)%ds.length;};tick();animT=setInterval(tick,2400);}
+addEventListener('hashchange',route);
+window.ROUTE=route;
+
+/* ---------- i18n (interface, story and headings) ---------- */
+const T={
+ 'nav.main a:nth-child(1)':{nl:'Oplossingen',fr:'Solutions'},
+ 'nav.main a:nth-child(2)':{nl:'Tools',fr:'Outils'},
+ 'nav.main a:nth-child(3)':{nl:'Diensten',fr:'Services'},
+ 'nav.main a:nth-child(4)':{nl:'Projecten',fr:'Projets'},
+ 'nav.main a:nth-child(5)':{nl:'Over ons',fr:'À propos'},
+ '.top .right a.btn.primary':{nl:'Plan een gesprek van 20 min',fr:'Réserver un appel de 20 min'},
+ '.chap[data-i="0"] .mono':{nl:'Natuurgebaseerde oplossingen voor water',fr:'Solutions fondées sur la nature pour l’eau'},
+ '.chap[data-i="0"] h1':{nl:'Laat de natuur<br><em>het werk doen.</em>',fr:'Laissez la nature<br><em>faire le travail.</em>'},
+ '.chap[data-i="0"] p.plain':{nl:'Wetlands, bossen en overstromingsvlaktes die water vasthouden, zuiveren en opslaan. Wij helpen u de juiste oplossing op de juiste plek te zetten, en tonen aan dat ze werkt.',fr:'Zones humides, forêts et plaines inondables qui retiennent, épurent et stockent l’eau. Nous vous aidons à placer la bonne solution au bon endroit, et à prouver qu’elle fonctionne.'},
+ '.chap[data-i="1"] .mono':{nl:'01 · Locatiekeuze',fr:'01 · Choix du site'},
+ '.chap[data-i="1"] h2':{nl:'Vind waar de natuur<br><em>het meest helpt.</em>',fr:'Trouvez où la nature<br><em>aide le plus.</em>'},
+ '.chap[data-i="1"] p.plain':{nl:'We combineren reliëf, bodem, water, landgebruik en klimaat, wegen af wat voor u telt, en brengen de beste plekken voor elke oplossing in kaart.',fr:'Nous superposons relief, sols, eau, occupation du sol et climat, pondérons ce qui compte pour vous, et cartographions les meilleurs emplacements pour chaque solution.'},
+ '.chap[data-i="2"] .mono':{nl:'02 · Ontwerp',fr:'02 · Conception'},
+ '.chap[data-i="2"] h2':{nl:'Op maat van<br><em>de plek.</em>',fr:'Façonné pour<br><em>le lieu.</em>'},
+ '.chap[data-i="2"] p.plain':{nl:'Grootte, diepte, beplanting en inrichting, ontworpen voor de locatie en voor het klimaat van morgen.',fr:'Taille, profondeur, plantations et aménagement, conçus pour le site et pour le climat qu’il affrontera.'},
+ '.chap[data-i="3"] .mono':{nl:'03 · Modellering',fr:'03 · Modélisation'},
+ '.chap[data-i="3"] h2':{nl:'Bewijs het<br><em>vóór u bouwt.</em>',fr:'Prouvez-le<br><em>avant de construire.</em>'},
+ '.chap[data-i="3"] p.plain':{nl:'Onze modellen volgen het water boven en onder de grond. Zo ziet u wat verandert met en zonder de maatregel: piekdebieten, zomerafvoer en grondwater.',fr:'Nos modèles suivent l’eau en surface et sous terre. Vous voyez ce qui change avec et sans la mesure : pics de crue, débit d’été et nappes.'},
+ '.chap[data-i="4"] .mono':{nl:'04 · Monitoring',fr:'04 · Suivi'},
+ '.chap[data-i="4"] h2':{nl:'Opvolgen.<br><em>Leren. Herhalen.</em>',fr:'Suivre.<br><em>Apprendre. Recommencer.</em>'},
+ '.chap[data-i="4"] p.plain':{nl:'Satellieten, drones en sensoren volgen seizoen na seizoen hoe de locatie presteert.',fr:'Satellites, drones et capteurs suivent les performances du site, saison après saison.'},
+ '.chap[data-i="5"] .mono':{nl:'De NbS+C-aanpak',fr:'L’approche NbS+C'},
+ '.chap[data-i="5"] h2':{nl:'Geen lijn.<br><em>Een kringloop.</em>',fr:'Pas une ligne.<br><em>Une boucle.</em>'},
+ '.chap[data-i="5"] p.plain':{nl:'Elk resultaat verscherpt de volgende beslissing. Begin met één stap of met de volledige kringloop.',fr:'Chaque résultat affine la décision suivante. Commencez par une étape ou par toute la boucle.'},
+ '#start .sec-head h2':{nl:'Vertel ons wie u bent. <em>Wij tonen u de weg.</em>',fr:'Dites-nous qui vous êtes. <em>Nous vous montrons le chemin.</em>'},
+ '#finder .sec-head h2':{nl:'Wat is uw uitdaging? <em>Drie tikken naar een startpunt.</em>',fr:'Quel est votre défi ? <em>Trois clics pour un point de départ.</em>'},
+ '#finder .sec-head p':{nl:'Geen registratie. U krijgt de oplossingen die het bekijken waard zijn, de tool die ze test en een zinvolle eerste stap.',fr:'Sans inscription. Vous obtenez les solutions à examiner, l’outil qui les teste et une première étape sensée.'},
+ '#solutions .sec-head h2':{nl:'Acht manieren waarop de natuur <em>met water omgaat.</em>',fr:'Huit façons dont la nature <em>gère l’eau.</em>'},
+ '#tools .sec-head h2':{nl:'Tools die vragen <em>omzetten in antwoorden.</em>',fr:'Des outils qui transforment les questions <em>en réponses.</em>'},
+ '#tools .sec-head p':{nl:'Elke tool beantwoordt een eenvoudige vraag. Onder de motorkap: open data, gekoppelde modellen en remote sensing.',fr:'Chaque outil répond à une question simple. Sous le capot : données ouvertes, modèles couplés et télédétection.'},
+ '#compare .sec-head h2':{nl:'Versleep de schuif. <em>Zie de piek krimpen.</em>',fr:'Faites glisser le curseur. <em>Regardez la crue diminuer.</em>'},
+ '#compare .sec-head p':{nl:'Dit tonen onze modellen voor echte stroomgebieden. Hier met illustratieve cijfers, zodat u voelt hoe het werkt.',fr:'C’est ce que nos modèles montrent pour de vrais bassins versants. Ici avec des chiffres illustratifs, pour sentir comment cela fonctionne.'},
+ '#studio .sec-head h2':{nl:'Bouw uw eigen plan. <em>Kijk dan of het standhoudt.</em>',fr:'Construisez votre plan. <em>Puis voyez s’il tient.</em>'},
+ '#studio .sec-head p':{nl:'In workshops plaatsen belanghebbenden maatregelen op een echt, gekalibreerd stroomgebiedsmodel, testen ze tegen het toekomstige klimaat en vergelijken ze met een automatische optimalisatie. Probeer een zakversie.',fr:'En atelier, les parties prenantes placent des mesures sur un vrai modèle de bassin calibré, les testent face au climat futur et les comparent à un optimiseur automatique. Essayez une version de poche.'},
+ '#services .sec-head h2':{nl:'Vier stappen. <em>Begin met één, of met de volledige kringloop.</em>',fr:'Quatre étapes. <em>Commencez par une, ou par toute la boucle.</em>'},
+ '#projects .sec-head h2':{nl:'Waar de kringloop <em>al draait.</em>',fr:'Là où la boucle <em>tourne déjà.</em>'},
+ '#contact .cta h2':{nl:'Breng een vraag mee. <em>Vertrek met een plan.</em>',fr:'Venez avec une question. <em>Repartez avec un plan.</em>'},
+ '#contact .cta > div > p:nth-of-type(1)':{nl:'Vertel ons over uw locatie of stroomgebied. In twintig minuten zeggen we met welke stap u begint, welke tool past en wat u terugkrijgt.',fr:'Parlez-nous de votre site ou bassin versant. En vingt minutes, nous vous disons par quelle étape commencer, quel outil convient et ce que vous obtiendrez.'}
+};
+const EN={};for(const s in T){const el=document.querySelector(s);if(el)EN[s]=el.innerHTML;}
+function setLang(l){for(const s in T){const el=document.querySelector(s);if(!el)continue;el.innerHTML=l==='en'?EN[s]:(T[s][l]||EN[s]);}
+ document.documentElement.lang=l;document.querySelectorAll('.lang button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.l===l));try{localStorage.setItem('nbsc-lang',l)}catch(e){}}
+const lw=document.createElement('div');lw.className='lang';lw.setAttribute('role','group');lw.setAttribute('aria-label','Language');
+lw.innerHTML=['en','nl','fr'].map(l=>`<button data-l="${l}" aria-pressed="${l==='en'}">${l.toUpperCase()}</button>`).join('');
+document.querySelector('.top .right').insertBefore(lw,document.querySelector('.top .right').firstChild);
+lw.querySelectorAll('button').forEach(b=>b.onclick=()=>setLang(b.dataset.l));
+try{const l=localStorage.getItem('nbsc-lang');if(l&&l!=='en')setLang(l);}catch(e){}
+
+route();
+})();
+
+</script>
+</body>
+</html>
